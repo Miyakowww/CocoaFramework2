@@ -24,6 +24,12 @@ public IEnumerator Proc(MessageSource src)
     yield return null;
     int b = int.Parse(receiver.Message.PlainText);
 
+    // yield return "请输入第一个数";
+    // int a = int.Parse(receiver.Message.PlainText);
+    // 
+    // yield return "请输入第二个数";
+    // int b = int.Parse(receiver.Message.PlainText);
+
     src.Send($"结果是 {a + b}");
 }
 

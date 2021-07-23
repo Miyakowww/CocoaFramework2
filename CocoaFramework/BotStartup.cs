@@ -30,18 +30,18 @@ namespace Maila.Cocoa.Framework
     {
         public string host;
         public int port;
-        public string authKey;
+        public string verifyKey;
         public long qqId;
 
         internal List<Type> Middlewares { get; } = new();
         public List<Assembly> Assemblies { get; } = new();
         public TimeSpan autoSave;
 
-        public BotStartupConfig(string authKey, long qqId, string host) : this(authKey, qqId, host, 80) { }
-        public BotStartupConfig(string authKey, long qqId, int port) : this(authKey, qqId, "127.0.0.1", port) { }
-        public BotStartupConfig(string authKey, long qqId, string host = "127.0.0.1", int port = 8080)
+        public BotStartupConfig(string verifyKey, long qqId, string host) : this(verifyKey, qqId, host, 80) { }
+        public BotStartupConfig(string verifyKey, long qqId, int port) : this(verifyKey, qqId, "127.0.0.1", port) { }
+        public BotStartupConfig(string verifyKey, long qqId, string host = "127.0.0.1", int port = 8080)
         {
-            this.authKey = authKey;
+            this.verifyKey = verifyKey;
             this.qqId = qqId;
             this.host = host;
             this.port = port;

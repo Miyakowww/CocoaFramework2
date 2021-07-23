@@ -1,9 +1,30 @@
-# 更新日志
+<h1 align="center">更新日志</h1>
 
-## **2.0.0**
+# **2.1.0**
+*released July 23, 2021*
+
+## 修复
+
+- 解决 Middleware 无法更改消息内容的一系列相关问题
+
+## 变动
+
+- QMessage 中的 Message 类全部更改为 IMessage 接口，涉及构造函数和成员：
+    - QMessage(**IMessage**[] chain)
+    - ImmutableArray<**IMessage**> Chain
+    - T[] GetSubMessages\<T>() where T : **IMessage**
+
+## 新特性
+
+- 添加对 mirai-api-http 2.x 版本的支持
+
+
+<br>
+
+# **2.0.0**
 *released July 14, 2021*
 
-### **变动**
+## 变动
 
 - 更改依赖
     > Mirai-CSharp => CocoaBeans
@@ -15,7 +36,7 @@
 - 数据托管功能逻辑由自动保存更改为同步
 - 异常更改为由用户处理
 
-### **新特性**
+## 新特性
 
 - 支持添加多个程序集
 - 支持软件内重启

@@ -14,11 +14,11 @@ public class BotStartupConfig
 - BotStartupConfig(string, long, string)
     > 初始化 BotStartupConfig 类的新实例，默认端口为 80
     > ```C#
-    > public BotStartupConfig(string authKey, long qqId, string host);
+    > public BotStartupConfig(string verifyKey, long qqId, string host);
     > ```
     > 
     > ### 参数
-    > `authKey` string  
+    > `verifyKey` string  
     > 连接密钥  
     > `qqId` long  
     > 机器人的 QQ 号  
@@ -27,11 +27,11 @@ public class BotStartupConfig
 - BotStartupConfig(string, long, int)
     > 初始化 BotStartupConfig 类的新实例，默认 mirai-api-http 的地址为 127.0.0.1
     > ```C#
-    > public BotStartupConfig(string authKey, long qqId, int port);
+    > public BotStartupConfig(string verifyKey, long qqId, int port);
     > ```
     > 
     > ### 参数
-    > `authKey` string  
+    > `verifyKey` string  
     > 连接密钥  
     > `qqId` long  
     > 机器人的 QQ 号  
@@ -40,11 +40,11 @@ public class BotStartupConfig
 - BotStartupConfig(string, long, string, int)
     > 初始化 BotStartupConfig 类的新实例，默认 mirai-api-http 的地址为 127.0.0.1，端口为 8080
     > ```C#
-    > public BotStartupConfig(string authKey, long qqId, string host = "127.0.0.1", int port = 8080);
+    > public BotStartupConfig(string verifyKey, long qqId, string host = "127.0.0.1", int port = 8080);
     > ```
     > 
     > ### 参数
-    > `authKey` string  
+    > `verifyKey` string  
     > 连接密钥  
     > `qqId` long  
     > 机器人的 QQ 号  
@@ -58,7 +58,7 @@ public class BotStartupConfig
     > mirai-api-http 的地址
 - `port` int
     > 端口
-- `authKey` string
+- `verifyKey` string
     > 连接密钥
 - `qqId` long
     > 机器人的 QQ 号
@@ -77,7 +77,7 @@ public class BotStartupConfig
 <br>
 
 ## 方法
-- AddMiddleware()
+- AddMiddleware
     > 添加 Middleware
     > ```C#
     > public BotStartupConfig AddMiddleware<T>() where T : BotMiddlewareBase;
@@ -92,7 +92,7 @@ public class BotStartupConfig
     > BotStartupConfig  
     > 当前 BotStartupConfig
 - AddAssembly
-    > 添加包含 Module 的程序集
+    > 添加包含 Module 的程序集。入口程序集会被自动添加，请勿重复添加
     > ```C#
     > public BotStartupConfig AddAssembly(Assembly assem);
     > ```

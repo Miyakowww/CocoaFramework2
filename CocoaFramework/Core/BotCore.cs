@@ -2,6 +2,7 @@
 // Licensed under the GNU AGPLv3
 
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Maila.Cocoa.Beans.API;
@@ -17,7 +18,7 @@ namespace Maila.Cocoa.Framework.Core
         public static bool Connected => host is not null && BindingQQ is not null && SessionKey is not null;
 
         internal static string? host;
-        internal static string authKey = string.Empty;
+        internal static string verifyKey = string.Empty;
 
         private static readonly SemaphoreSlim connLock = new(1);
 
@@ -40,7 +41,8 @@ namespace Maila.Cocoa.Framework.Core
 
             host = $"{config.host}:{config.port}";
 
-            if (!await TestNetwork())
+            string? ver = await MiraiAPI.About(host);
+            if (ver is null)
             {
                 host = null;
                 SessionKey = null;
@@ -49,10 +51,11 @@ namespace Maila.Cocoa.Framework.Core
                 return false;
             }
 
+            bool IsVer2 = ver.StartsWith('2');
             try
             {
-                authKey = config.authKey;
-                SessionKey = await MiraiAPI.Auth(host, authKey);
+                verifyKey = config.verifyKey;
+                SessionKey = await (IsVer2 ? MiraiAPI.Verify(host, verifyKey) : MiraiAPI.Authv1(host, verifyKey));
                 if (SessionKey is null)
                 {
                     host = null;
@@ -61,9 +64,12 @@ namespace Maila.Cocoa.Framework.Core
                     connLock.Release();
                     return false;
                 }
-                await MiraiAPI.Verify(host, SessionKey, config.qqId);
+                await (IsVer2 ? MiraiAPI.Bind(host, SessionKey, config.qqId) : MiraiAPI.Verifyv1(host, SessionKey, config.qqId));
                 BindingQQ = config.qqId;
-                await MiraiAPI.SetConfig(host, SessionKey, null, true);
+                if (!IsVer2)
+                {
+                    await MiraiAPI.SetConfig(host, SessionKey, null, true);
+                }
             }
             catch
             {
@@ -82,7 +88,7 @@ namespace Maila.Cocoa.Framework.Core
 
                 await BotInfo.ReloadAll();
 
-                ModuleCore.Init(config.Assemblies);
+                ModuleCore.Init(config.Assemblies.Distinct());
                 MiddlewareCore.Init(config.Middlewares);
 
                 DataManager.StartHosting(config.autoSave);
@@ -150,26 +156,35 @@ namespace Maila.Cocoa.Framework.Core
             }
             catch { }
 
-            if (!await TestNetwork())
+            string? ver = host is null ? null : await MiraiAPI.About(host);
+            if (ver is null)
             {
                 SessionKey = null;
+                BotAPI.Reset();
                 connLock.Release();
                 return;
             }
 
+            bool IsVer2 = ver.StartsWith('2');
+
             try
             {
-                SessionKey = await MiraiAPI.Auth(host!, authKey);
+                SessionKey = await (IsVer2 ? MiraiAPI.Verify(host!, verifyKey) : MiraiAPI.Authv1(host!, verifyKey));
                 if (SessionKey is null)
                 {
+                    BotAPI.Reset();
                     return;
                 }
-                await MiraiAPI.Verify(host!, SessionKey, BindingQQ!.Value);
-                await MiraiAPI.SetConfig(host!, SessionKey, null, true);
+                await (IsVer2 ? MiraiAPI.Bind(host!, SessionKey, BindingQQ!.Value) : MiraiAPI.Verifyv1(host!, SessionKey, BindingQQ!.Value));
+                if (!IsVer2)
+                {
+                    await MiraiAPI.SetConfig(host!, SessionKey, null, true);
+                }
             }
             catch
             {
                 SessionKey = null;
+                BotAPI.Reset();
                 return;
             }
             finally

@@ -10,12 +10,12 @@ namespace Maila.Cocoa.Framework
 {
     public class QMessage
     {
-        public ImmutableArray<Message> Chain { get; }
+        public ImmutableArray<IMessage> Chain { get; }
         public int Id { get; }
         public DateTime Time { get; }
         public string PlainText { get; }
 
-        internal QMessage(Message[] chain)
+        public QMessage(IMessage[] chain)
         {
             if (chain is null || chain.Length < 2 || chain[0] is not SourceMessage sm)
             {
@@ -28,7 +28,7 @@ namespace Maila.Cocoa.Framework
             PlainText = string.Concat(chain.Select(m => (m as PlainMessage)?.Text));
         }
 
-        public T[] GetSubMessages<T>() where T : Message
+        public T[] GetSubMessages<T>() where T : IMessage
             => Chain.OfType<T>()
                     .ToArray();
 

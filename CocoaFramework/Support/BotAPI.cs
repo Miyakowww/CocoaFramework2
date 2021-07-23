@@ -56,15 +56,24 @@ namespace Maila.Cocoa.Framework.Support
             }
 
             source = new();
-            if (await BotCore.TestNetwork())
+            string? ver = BotCore.host is null ? null : await MiraiAPI.About(BotCore.host);
+            if (ver is null)
             {
-                MiraiAPI.ListenAllEvent(BotCore.host!, BotCore.SessionKey!,
-                    e => eventListeners.GetValueOrDefault(e.GetType())?.Invoke(e),
-                    Init, source.Token);
+                _ = BotCore.Disconnect();
+                return;
+            }
+
+            if (ver.StartsWith('2'))
+            {
+                MiraiAPI.ListenAllEvent(BotCore.host!, BotCore.SessionKey!, BotCore.verifyKey, BotCore.BindingQQ!.Value,
+                        e => eventListeners.GetValueOrDefault(e.GetType())?.Invoke(e),
+                        Init, source.Token);
             }
             else
             {
-                _ = BotCore.Disconnect();
+                MiraiAPI.ListenAllEventv1(BotCore.host!, BotCore.SessionKey!,
+                        e => eventListeners.GetValueOrDefault(e.GetType())?.Invoke(e),
+                        Init, source.Token);
             }
         }
 
@@ -125,6 +134,9 @@ namespace Maila.Cocoa.Framework.Support
         public static Action<BotJoinGroupEvent>? OnBotJoinGroup { set => SetEvent(value); }
         public static Action<BotLeaveEventActive>? OnBotLeaveActive { set => SetEvent(value); }
         public static Action<BotLeaveEventKick>? OnBotLeaveKick { set => SetEvent(value); }
+
+        public static Action<FriendInputStatusChangedEvent>? OnFriendInputStatusChanged { set => SetEvent(value); }
+        public static Action<FriendNickChangedEvent>? OnFriendNickChanged { set => SetEvent(value); }
 
         public static Action<GroupRecallEvent>? OnGroupRecall { set => SetEvent(value); }
         public static Action<FriendRecallEvent>? OnFriendRecall { set => SetEvent(value); }
