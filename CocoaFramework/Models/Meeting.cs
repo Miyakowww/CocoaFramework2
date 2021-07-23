@@ -21,6 +21,7 @@ namespace Maila.Cocoa.Framework.Models
         private TimeSpan timeout = TimeSpan.Zero;
         private int counter;
         private bool running;
+        private bool skip;
         private bool finished;
 
         private readonly object _lock = new();
@@ -44,6 +45,11 @@ namespace Maila.Cocoa.Framework.Models
             if (finished)
             {
                 return LockState.ContinueAndRemove;
+            }
+
+            if (skip)
+            {
+                return LockState.Continue;
             }
 
             lock (_lock)
@@ -88,7 +94,6 @@ namespace Maila.Cocoa.Framework.Models
                         {
                             receiver = rec;
                             var state = InternalRun(src, msg);
-                            running = false;
                             return state;
                         }
                     case ListeningTarget tgt:
@@ -96,12 +101,22 @@ namespace Maila.Cocoa.Framework.Models
                             target = tgt;
                             break;
                         }
-                    case TimeSpan tout:
+                    case MeetingTimeout tout:
                         {
-                            timeout = tout;
+                            timeout = tout.Duration;
                             var state = InternalRun(src, msg);
-                            running = false;
                             return state;
+                        }
+                    case AsyncTask task:
+                        {
+                            skip = true;
+                            Task.Run(async () =>
+                            {
+                                await task.RealTask;
+                                InternalRun(src, msg);
+                                skip = false;
+                            });
+                            return LockState.NotFinished;
                         }
                     case NotFit nf:
                         {
@@ -134,7 +149,6 @@ namespace Maila.Cocoa.Framework.Models
                             }
 
                             state = InternalRun(src, msg);
-                            running = false;
                             return state;
                         }
                 }

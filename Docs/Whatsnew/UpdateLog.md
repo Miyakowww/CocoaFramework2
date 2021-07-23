@@ -1,5 +1,19 @@
 <h1 align="center">更新日志</h1>
 
+# **2.1.1**
+*released July 24, 2021*
+
+## 变动
+
+- Meeting 中修改超时的方式由返回 TimeSpan 更改为 MeetingTimeout
+- 优化 Route 在返回 void 时的执行逻辑
+
+## 新特性
+
+- 新增 AsyncTask，用于在 Meeting 中执行异步任务
+
+<br>
+
 # **2.1.0**
 *released July 23, 2021*
 

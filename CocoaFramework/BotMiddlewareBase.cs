@@ -22,7 +22,7 @@ namespace Maila.Cocoa.Framework
 
             MethodInfo onMessageInfo = realType.GetMethod(nameof(OnMessage), BindingFlags.Instance | BindingFlags.NonPublic)!;
             OnMessageOverrode = onMessageInfo.DeclaringType != baseType && onMessageInfo.GetCustomAttribute<DisabledAttribute>() is null;
-            OnMessageThreadSafe = OnMessageOverrode && onMessageInfo.GetCustomAttribute<ThreadSafeAttribute>() is not null;
+            OnMessageThreadSafe = !OnMessageOverrode || onMessageInfo.GetCustomAttribute<ThreadSafeAttribute>() is not null;
 
             TypeName = realType.Name;
 

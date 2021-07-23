@@ -3,6 +3,7 @@
 
 using System;
 using System.Reflection;
+using System.Threading.Tasks;
 
 namespace Maila.Cocoa.Framework.Models.Route
 {
@@ -63,6 +64,25 @@ namespace Maila.Cocoa.Framework.Models.Route
                 return false;
             }
 
+            if (isVoid)
+            {
+                Task.Run(() =>
+                {
+                    if (isThreadSafe)
+                    {
+                        lock (_lock)
+                        {
+                            route.Invoke(module, args);
+                        }
+                    }
+                    else
+                    {
+                        route.Invoke(module, args);
+                    }
+                });
+                return true;
+            }
+
             object? result;
             if (isThreadSafe)
             {
@@ -76,10 +96,6 @@ namespace Maila.Cocoa.Framework.Models.Route
                 result = route.Invoke(module, args);
             }
 
-            if (isVoid)
-            {
-                return true;
-            }
             if (processor is not null)
             {
                 return processor(src, result);

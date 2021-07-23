@@ -31,7 +31,7 @@
 using System;
 using Maila.Cocoa.Framework;
 
-BotStartupConfig config = new("YourAuthKey", 12345678); // 启动配置，请将 YourAuthKey 改为您的 AuthKey
+BotStartupConfig config = new("YourVerifyKey", 12345678); // 启动配置，请将 YourVerifyKey 改为您的 VerifyKey
 var succeed = await BotStartup.Connect(config); // 连接 Mirai 并初始化
 if (succeed) // 如果连接成功
 {
