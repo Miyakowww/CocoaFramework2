@@ -38,4 +38,10 @@
 // protected virtual bool OnMessage(ref MessageSource src, ref QMessage msg);
 protected virtual void OnMessage(MessageSource src, QMessage msg, Action<MessageSource, QMessage> next);
 ```
-这意味着可以不再受到 ref 的限制，可以使用 async/await 进行异步处理
+这意味着 Middleware 不再受到 ref 的限制，可以使用 async/await 更为方便地进行异步处理
+
+<br>
+
+## AutoData
+---
+基于消息来源提供不同的数据，可以极大简化对简单数据的管理。详见 [AutoData](../Manual/AutoData.md)

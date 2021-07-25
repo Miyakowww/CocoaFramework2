@@ -93,7 +93,7 @@ namespace Maila.Cocoa.Framework.Core
                 }
                 catch (Exception e)
                 {
-                    throw new AggregateException($"Module Run Error: {module.Name}", e);
+                    throw new AggregateException($"Module Run Error: {module.TypeName}", e);
                 }
                 OnMessageFinished(src, msg, origSrc, origMsg, true, module);
                 return;

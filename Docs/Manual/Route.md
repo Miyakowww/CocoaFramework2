@@ -23,6 +23,7 @@
   - 第一个类型为 QMessage 的参数将被传入消息的内容
   - 参数名为正则表达式中的组名且类型为 string 的参数将被传入该组匹配到的字符串，如果该组会进行多次匹配（如 (?\<name>abc)+）则会传入匹配到的最后一个字符串。在 TextRoute 中无效
   - 参数名为正则表达式中的组名且类型为 string[] 或 List\<string> 的参数将被传入该组匹配到的全部字符串。在 TextRoute 中无效
+  - 类型为 UserAutoData、GroupAutoData、SourceAutoData 的参数将根据消息来源提供对应的数据。详见 [AutoData](./AutoData.md)
 
 - 返回值
   - 入口方法的返回值可以是任意类型

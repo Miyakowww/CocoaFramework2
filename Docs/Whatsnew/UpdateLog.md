@@ -1,5 +1,14 @@
 <h1 align="center">更新日志</h1>
 
+# **2.1.2**
+*released July 25, 2021*
+
+## 新特性
+
+- 新增 AutoData，用于简化对简单数据的管理
+
+<br>
+
 # **2.1.1**
 *released July 24, 2021*
 

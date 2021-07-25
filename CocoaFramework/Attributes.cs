@@ -14,6 +14,8 @@ namespace Maila.Cocoa.Framework
         AttributeTargets.Parameter)]
     public sealed class DisabledAttribute : Attribute { }
 
+    #region === Behavior ===
+
     [AttributeUsage(AttributeTargets.Class)]
     public sealed class BotModuleAttribute : Attribute
     {
@@ -68,11 +70,19 @@ namespace Maila.Cocoa.Framework
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
     public sealed class DisableInPrivateAttribute : Attribute { }
 
+    #endregion
+
+    #region === Feature ===
+
     [AttributeUsage(AttributeTargets.Method)]
     public sealed class ThreadSafeAttribute : Attribute { }
 
     [AttributeUsage(AttributeTargets.Field)]
     public sealed class HostingAttribute : Attribute { }
+
+    #endregion
+
+    #region === Route ===
 
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
     public sealed class RegexRouteAttribute : Attribute
@@ -114,4 +124,9 @@ namespace Maila.Cocoa.Framework
             Default = @default;
         }
     }
+
+    [AttributeUsage(AttributeTargets.Parameter)]
+    public sealed class MemoryOnlyAttribute : Attribute { }
+
+    #endregion
 }

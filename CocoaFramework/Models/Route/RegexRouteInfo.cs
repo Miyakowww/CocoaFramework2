@@ -12,11 +12,13 @@ namespace Maila.Cocoa.Framework.Models.Route
     internal class RegexRouteInfo : RouteInfo
     {
         private readonly Regex[] regexs;
+        private readonly BotModuleBase module;
 
         private readonly int srcIndex;
         private readonly int msgIndex;
         private readonly int argCount;
         private readonly List<(int gnum, int argIndex, int paraType, object? @default)>[] argsIndex;
+        private readonly List<(int argIndex, int bindingType, string name, Type type)> autoDataIndex;
 
         private static int GetParaType(Type type)
         {
@@ -40,27 +42,53 @@ namespace Maila.Cocoa.Framework.Models.Route
         public RegexRouteInfo(BotModuleBase module, MethodInfo route, Regex[] regexs, Func<MessageSource, bool> pred) : base(module, route, pred)
         {
             this.regexs = regexs;
+            this.module = module;
 
             ParameterInfo[] parameters = route.GetParameters();
             argCount = parameters.Length;
             argsIndex = new List<(int gnum, int argIndex, int paraType, object? @default)>[regexs.Length];
+            autoDataIndex = new();
             srcIndex = -1;
             msgIndex = -1;
 
             for (int i = 0; i < argCount; i++)
             {
-                if (parameters[i].GetCustomAttribute<DisabledAttribute>() is not null)
+                ParameterInfo para = parameters[i];
+                if (para.GetCustomAttribute<DisabledAttribute>() is not null)
                 {
                     continue;
                 }
 
-                if (srcIndex == -1 && parameters[i].ParameterType == typeof(MessageSource))
+                Type paraType = para.ParameterType;
+                if (srcIndex == -1 && paraType == typeof(MessageSource))
                 {
                     srcIndex = i;
                 }
-                else if (msgIndex == -1 && parameters[i].ParameterType == typeof(QMessage))
+                else if (msgIndex == -1 && paraType == typeof(QMessage))
                 {
                     msgIndex = i;
+                }
+                else if (paraType.IsGenericType)
+                {
+                    Type typeDefinition = paraType.GetGenericTypeDefinition();
+                    if (typeDefinition == UserAutoDataType)
+                    {
+                        autoDataIndex.Add((i, 0 + (para.GetCustomAttribute<MemoryOnlyAttribute>() is null ? 0 : 3),
+                                           $"{para.Name} {paraType.AssemblyQualifiedName!.CalculateCRC16():X}",
+                                           paraType.GenericTypeArguments[0]));
+                    }
+                    else if (typeDefinition == GroupAutoDataType)
+                    {
+                        autoDataIndex.Add((i, 1 + (para.GetCustomAttribute<MemoryOnlyAttribute>() is null ? 0 : 3),
+                                           $"{para.Name} {paraType.AssemblyQualifiedName!.CalculateCRC16():X}",
+                                           paraType.GenericTypeArguments[0]));
+                    }
+                    else if (typeDefinition == SourceAutoDataType)
+                    {
+                        autoDataIndex.Add((i, 2 + (para.GetCustomAttribute<MemoryOnlyAttribute>() is null ? 0 : 3),
+                                           $"{para.Name} {paraType.AssemblyQualifiedName!.CalculateCRC16():X}",
+                                           paraType.GenericTypeArguments[0]));
+                    }
                 }
             }
 
@@ -129,6 +157,19 @@ namespace Maila.Cocoa.Framework.Models.Route
                         _ => null
                     }
                     : _default;
+            }
+            foreach ((int argIndex, int bindingType, string name, Type type) in autoDataIndex)
+            {
+                args[argIndex] = bindingType switch
+                {
+                    0 => module.GetUserAutoData(src, name, type),
+                    1 => module.GetGroupAutoData(src, name, type),
+                    2 => module.GetSourceAutoData(src, name, type),
+                    3 => module.GetUserTempData(src, name, type),
+                    4 => module.GetGroupTempData(src, name, type),
+                    5 => module.GetSourceTempData(src, name, type),
+                    _ => null
+                };
             }
 
             return args;

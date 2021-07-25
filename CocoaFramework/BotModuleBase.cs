@@ -2,6 +2,7 @@
 // Licensed under the GNU AGPLv3
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -20,9 +21,9 @@ namespace Maila.Cocoa.Framework
         public bool EnableInPrivate { get; }
 
         public bool IsAnonymous { get; }
+        public string DataRoot { get; }
 
         private bool enabled;
-
         public bool Enabled
         {
             get => enabled;
@@ -32,22 +33,35 @@ namespace Maila.Cocoa.Framework
                 BotReg.SetBool($"MODULE/{TypeName}/ENABLED", value);
             }
         }
+
         internal readonly Func<MessageSource, bool> Pred;
 
-        internal string? TypeName { get; }
+        internal string TypeName { get; }
 
         private readonly List<RouteInfo> routes = new();
 
+        private static readonly Type BaseType = typeof(BotModuleBase);
+
         protected internal BotModuleBase()
         {
-            Type baseType = typeof(BotModuleBase);
             Type realType = GetType();
+
+            #region === Module Info ===
+
+            TypeName = realType.Name;
+            DataRoot = $"ModuleData/{TypeName}_{realType.AssemblyQualifiedName!.CalculateCRC16():X}/";
             if (realType.GetCustomAttribute<BotModuleAttribute>() is { } moduleInfo)
             {
                 Name = moduleInfo.Name;
                 Priority = moduleInfo.Priority;
                 IsAnonymous = Name is null;
             }
+
+            enabled = BotReg.GetBool($"MODULE/{TypeName}/ENABLED", true);
+
+            #endregion
+
+            #region === Conditions ===
 
             var reqs = realType.GetCustomAttributes<IdentityRequirementsAttribute>()
                                .Select<IdentityRequirementsAttribute, Func<MessageSource, bool>>(r => src => r.Check(src.User.Identity, src.Permission))
@@ -59,11 +73,15 @@ namespace Maila.Cocoa.Framework
             EnableInGroup = realType.GetCustomAttribute<DisableInGroupAttribute>() is null;
             EnableInPrivate = realType.GetCustomAttribute<DisableInPrivateAttribute>() is null;
 
-            InitOverrode = realType.GetMethod(nameof(Init), BindingFlags.Instance | BindingFlags.NonPublic)!.DeclaringType != baseType;
-            DestroyOverrode = realType.GetMethod(nameof(Destroy), BindingFlags.Instance | BindingFlags.NonPublic)!.DeclaringType != baseType;
+            #endregion
+
+            #region === Method Info ===
+
+            InitOverrode = realType.GetMethod(nameof(Init), BindingFlags.Instance | BindingFlags.NonPublic)!.DeclaringType != BaseType;
+            DestroyOverrode = realType.GetMethod(nameof(Destroy), BindingFlags.Instance | BindingFlags.NonPublic)!.DeclaringType != BaseType;
 
             MethodInfo onMessageInfo = realType.GetMethod(nameof(OnMessage), BindingFlags.Instance | BindingFlags.NonPublic)!;
-            OnMessageOverrode = onMessageInfo.DeclaringType != baseType && onMessageInfo.GetCustomAttribute<DisabledAttribute>() is null;
+            OnMessageOverrode = onMessageInfo.DeclaringType != BaseType && onMessageInfo.GetCustomAttribute<DisabledAttribute>() is null;
             OnMessageThreadSafe = !OnMessageOverrode || onMessageInfo.GetCustomAttribute<ThreadSafeAttribute>() is not null;
             OnMessageEnableInGroup = OnMessageOverrode && onMessageInfo.GetCustomAttribute<DisableInGroupAttribute>() is null;
             OnMessageEnableInPrivate = OnMessageOverrode && onMessageInfo.GetCustomAttribute<DisableInPrivateAttribute>() is null;
@@ -82,25 +100,31 @@ namespace Maila.Cocoa.Framework
             }
 
             MethodInfo onMessageFinishedInfo = realType.GetMethod(nameof(OnMessageFinished), BindingFlags.Instance | BindingFlags.NonPublic)!;
-            OnMessageFinishedOverrode = onMessageFinishedInfo.DeclaringType != baseType && onMessageFinishedInfo.GetCustomAttribute<DisabledAttribute>() is null;
+            OnMessageFinishedOverrode = onMessageFinishedInfo.DeclaringType != BaseType && onMessageFinishedInfo.GetCustomAttribute<DisabledAttribute>() is null;
             OnMessageFinishedThreadSafe = !OnMessageFinishedOverrode || onMessageFinishedInfo.GetCustomAttribute<ThreadSafeAttribute>() is not null;
             OnMessageFinishedEnableInGroup = OnMessageFinishedOverrode && onMessageFinishedInfo.GetCustomAttribute<DisableInGroupAttribute>() is null;
             OnMessageFinishedEnableInPrivate = OnMessageFinishedOverrode && onMessageFinishedInfo.GetCustomAttribute<DisableInPrivateAttribute>() is null;
 
-            TypeName = realType.Name;
+            #endregion
 
-            if (TypeName is not null)
+            #region === Data Hosting ===
+
+            foreach (var field in realType
+                .GetFields(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
+                .Where(f => f.GetCustomAttribute<HostingAttribute>() is not null
+                         && f.GetCustomAttribute<DisabledAttribute>() is null
+                         && !(f.IsStatic && f.IsInitOnly)))
             {
-                var crc16 = realType.AssemblyQualifiedName!.CalculateCRC16().ToString("X");
-                foreach (var field in realType
-                    .GetFields(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
-                    .Where(f => f.GetCustomAttribute<HostingAttribute>() is not null && f.GetCustomAttribute<DisabledAttribute>() is null))
-                {
-                    DataManager.AddHosting(field, this, $"ModuleData/{TypeName}_{crc16}/Field_{field.Name}");
-                }
+                DataManager.AddHosting(field, this, $"{DataRoot}Field_{field.Name}");
             }
 
-            enabled = BotReg.GetBool($"MODULE/{TypeName}/ENABLED", true);
+            DataManager.AddHosting(BaseType.GetField(nameof(userAutoData), BindingFlags.NonPublic | BindingFlags.Instance)!, this, $"{DataRoot}UserAutoData");
+            DataManager.AddHosting(BaseType.GetField(nameof(groupAutoData), BindingFlags.NonPublic | BindingFlags.Instance)!, this, $"{DataRoot}GroupAutoData");
+            DataManager.AddHosting(BaseType.GetField(nameof(sourceAutoData), BindingFlags.NonPublic | BindingFlags.Instance)!, this, $"{DataRoot}SourceAutoData");
+
+            #endregion
+
+            #region === Route ===
 
             MethodInfo[] methods = realType.GetMethods();
             foreach (var method in methods)
@@ -133,7 +157,11 @@ namespace Maila.Cocoa.Framework
                                                                                        : src => true));
                 }
             }
+
+            #endregion
         }
+
+        #region === Event Handling ===
 
         internal bool InitOverrode { get; }
         protected internal virtual void Init() { }
@@ -147,12 +175,10 @@ namespace Maila.Cocoa.Framework
         internal bool OnMessageEnableInGroup { get; }
         internal bool OnMessageEnableInPrivate { get; }
         private readonly object onMessageLock = new();
-
         protected internal virtual bool OnMessage(MessageSource src, QMessage msg)
         {
             return false;
         }
-
         internal bool OnMessageInternal(MessageSource src, QMessage msg)
         {
             if (routes.Any(route => route.Run(src, msg)))
@@ -188,7 +214,6 @@ namespace Maila.Cocoa.Framework
         internal bool OnMessageFinishedEnableInPrivate { get; }
         private readonly object onMessageFinishedLock = new();
         protected internal virtual void OnMessageFinished(MessageSource src, QMessage msg, MessageSource origSrc, QMessage origMsg, bool processed, BotModuleBase? processModule) { }
-
         internal void OnMessageFinishedInternal(MessageSource src, QMessage msg, MessageSource origSrc, QMessage origMsg, bool processed, BotModuleBase? processModule)
         {
             if (!OnMessageFinishedOverrode)
@@ -211,5 +236,188 @@ namespace Maila.Cocoa.Framework
                 }
             }
         }
+
+        #endregion
+
+        #region === AutoData ===
+
+        private static readonly Type UserAutoDataType = typeof(UserAutoData<>);
+        private static readonly Type GroupAutoDataType = typeof(GroupAutoData<>);
+        private static readonly Type SourceAutoDataType = typeof(SourceAutoData<>);
+
+        internal readonly ConcurrentDictionary<long, ConcurrentDictionary<string, object?>> userAutoData = new();
+        internal readonly ConcurrentDictionary<long, ConcurrentDictionary<string, object?>> groupAutoData = new();
+        internal readonly ConcurrentDictionary<(long?, long), ConcurrentDictionary<string, object?>> sourceAutoData = new();
+        internal readonly ConcurrentDictionary<long, ConcurrentDictionary<string, object?>> userTempData = new();
+        internal readonly ConcurrentDictionary<long, ConcurrentDictionary<string, object?>> groupTempData = new();
+        internal readonly ConcurrentDictionary<(long?, long), ConcurrentDictionary<string, object?>> sourceTempData = new();
+
+        internal readonly ConcurrentDictionary<long, ConcurrentDictionary<string, object?>> userAutoDataCache = new();
+        internal readonly ConcurrentDictionary<long, ConcurrentDictionary<string, object?>> groupAutoDataCache = new();
+        internal readonly ConcurrentDictionary<(long?, long), ConcurrentDictionary<string, object?>> sourceAutoDataCache = new();
+        internal readonly ConcurrentDictionary<long, ConcurrentDictionary<string, object?>> userTempDataCache = new();
+        internal readonly ConcurrentDictionary<long, ConcurrentDictionary<string, object?>> groupTempDataCache = new();
+        internal readonly ConcurrentDictionary<(long?, long), ConcurrentDictionary<string, object?>> sourceTempDataCache = new();
+
+        internal object? GetUserAutoData(MessageSource src, string name, Type type)
+        {
+            if (!userAutoDataCache.TryGetValue(src.User.Id, out var _vals))
+            {
+                _vals = new();
+                userAutoDataCache[src.User.Id] = _vals;
+            }
+            if (_vals.TryGetValue(name, out var _val))
+            {
+                return _val;
+            }
+            if (!userAutoData.TryGetValue(src.User.Id, out var vals))
+            {
+                vals = new();
+                userAutoData[src.User.Id] = vals;
+            }
+            if (!vals.ContainsKey(name))
+            {
+                vals[name] = null;
+            }
+            _val = Activator.CreateInstance(UserAutoDataType.MakeGenericType(type),
+                                            BindingFlags.NonPublic | BindingFlags.Instance, null,
+                                            new object[] { userAutoData, src.User.Id, name }, null);
+            _vals[name] = _val;
+            return _val;
+        }
+        internal object? GetGroupAutoData(MessageSource src, string name, Type type)
+        {
+            if (!groupAutoDataCache.TryGetValue(src.User.Id, out var _vals))
+            {
+                _vals = new();
+                groupAutoDataCache[src.User.Id] = _vals;
+            }
+            if (_vals.TryGetValue(name, out var _val))
+            {
+                return _val;
+            }
+            if (!groupAutoData.TryGetValue(src.User.Id, out var vals))
+            {
+                vals = new();
+                groupAutoData[src.User.Id] = vals;
+            }
+            if (!vals.ContainsKey(name))
+            {
+                vals[name] = null;
+            }
+            _val = Activator.CreateInstance(GroupAutoDataType.MakeGenericType(type),
+                                            BindingFlags.NonPublic | BindingFlags.Instance, null,
+                                            new object[] { groupAutoData, src.Group?.Id ?? 0, name }, null);
+            _vals[name] = _val;
+            return _val;
+        }
+        internal object? GetSourceAutoData(MessageSource src, string name, Type type)
+        {
+            var key = (src.Group?.Id, src.User.Id);
+            if (!sourceAutoDataCache.TryGetValue(key, out var _vals))
+            {
+                _vals = new();
+                sourceAutoDataCache[key] = _vals;
+            }
+            if (_vals.TryGetValue(name, out var _val))
+            {
+                return _val;
+            }
+            if (!sourceAutoData.TryGetValue(key, out var vals))
+            {
+                vals = new();
+                sourceAutoData[key] = vals;
+            }
+            if (!vals.ContainsKey(name))
+            {
+                vals[name] = null;
+            }
+            _val = Activator.CreateInstance(SourceAutoDataType.MakeGenericType(type),
+                                            BindingFlags.NonPublic | BindingFlags.Instance, null,
+                                            new object[] { sourceAutoData, key, name }, null);
+            _vals[name] = _val;
+            return _val;
+        }
+        internal object? GetUserTempData(MessageSource src, string name, Type type)
+        {
+            if (!userTempDataCache.TryGetValue(src.User.Id, out var _vals))
+            {
+                _vals = new();
+                userTempDataCache[src.User.Id] = _vals;
+            }
+            if (_vals.TryGetValue(name, out var _val))
+            {
+                return _val;
+            }
+            if (!userTempData.TryGetValue(src.User.Id, out var vals))
+            {
+                vals = new();
+                userTempData[src.User.Id] = vals;
+            }
+            if (!vals.ContainsKey(name))
+            {
+                vals[name] = null;
+            }
+            _val = Activator.CreateInstance(UserAutoDataType.MakeGenericType(type),
+                                            BindingFlags.NonPublic | BindingFlags.Instance, null,
+                                            new object[] { userTempData, src.User.Id, name }, null);
+            _vals[name] = _val;
+            return _val;
+        }
+        internal object? GetGroupTempData(MessageSource src, string name, Type type)
+        {
+            if (!groupTempDataCache.TryGetValue(src.User.Id, out var _vals))
+            {
+                _vals = new();
+                groupTempDataCache[src.User.Id] = _vals;
+            }
+            if (_vals.TryGetValue(name, out var _val))
+            {
+                return _val;
+            }
+            if (!groupTempData.TryGetValue(src.User.Id, out var vals))
+            {
+                vals = new();
+                groupTempData[src.User.Id] = vals;
+            }
+            if (!vals.ContainsKey(name))
+            {
+                vals[name] = null;
+            }
+            _val = Activator.CreateInstance(GroupAutoDataType.MakeGenericType(type),
+                                            BindingFlags.NonPublic | BindingFlags.Instance, null,
+                                            new object[] { groupTempData, src.Group?.Id ?? 0, name }, null);
+            _vals[name] = _val;
+            return _val;
+        }
+        internal object? GetSourceTempData(MessageSource src, string name, Type type)
+        {
+            var key = (src.Group?.Id, src.User.Id);
+            if (!sourceTempDataCache.TryGetValue(key, out var _vals))
+            {
+                _vals = new();
+                sourceTempDataCache[key] = _vals;
+            }
+            if (_vals.TryGetValue(name, out var _val))
+            {
+                return _val;
+            }
+            if (!sourceTempData.TryGetValue(key, out var vals))
+            {
+                vals = new();
+                sourceTempData[key] = vals;
+            }
+            if (!vals.ContainsKey(name))
+            {
+                vals[name] = null;
+            }
+            _val = Activator.CreateInstance(SourceAutoDataType.MakeGenericType(type),
+                                            BindingFlags.NonPublic | BindingFlags.Instance, null,
+                                            new object[] { sourceTempData, key, name }, null);
+            _vals[name] = _val;
+            return _val;
+        }
+
+        #endregion
     }
 }

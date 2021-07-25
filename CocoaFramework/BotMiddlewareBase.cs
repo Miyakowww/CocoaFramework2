@@ -10,31 +10,30 @@ namespace Maila.Cocoa.Framework
 {
     public abstract class BotMiddlewareBase
     {
-        internal string? TypeName { get; }
+        public string DataRoot { get; }
+
+        internal string TypeName { get; }
+
+        private static readonly Type BaseType = typeof(BotModuleBase);
 
         protected internal BotMiddlewareBase()
         {
-            Type baseType = typeof(BotModuleBase);
             Type realType = GetType();
+            TypeName = realType.Name;
+            DataRoot = $"ModuleData/{TypeName}_{realType.AssemblyQualifiedName!.CalculateCRC16():X}/";
 
-            InitOverrode = realType.GetMethod(nameof(Init), BindingFlags.Instance | BindingFlags.NonPublic)!.DeclaringType != baseType;
-            DestroyOverrode = realType.GetMethod(nameof(Destroy), BindingFlags.Instance | BindingFlags.NonPublic)!.DeclaringType != baseType;
+            InitOverrode = realType.GetMethod(nameof(Init), BindingFlags.Instance | BindingFlags.NonPublic)!.DeclaringType != BaseType;
+            DestroyOverrode = realType.GetMethod(nameof(Destroy), BindingFlags.Instance | BindingFlags.NonPublic)!.DeclaringType != BaseType;
 
             MethodInfo onMessageInfo = realType.GetMethod(nameof(OnMessage), BindingFlags.Instance | BindingFlags.NonPublic)!;
-            OnMessageOverrode = onMessageInfo.DeclaringType != baseType && onMessageInfo.GetCustomAttribute<DisabledAttribute>() is null;
+            OnMessageOverrode = onMessageInfo.DeclaringType != BaseType && onMessageInfo.GetCustomAttribute<DisabledAttribute>() is null;
             OnMessageThreadSafe = !OnMessageOverrode || onMessageInfo.GetCustomAttribute<ThreadSafeAttribute>() is not null;
 
-            TypeName = realType.Name;
-
-            if (realType.Name is not null)
-            {
-                var crc16 = realType.AssemblyQualifiedName!.CalculateCRC16().ToString("X");
-                foreach (var field in realType
+            foreach (var field in realType
                     .GetFields(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
                     .Where(f => f.GetCustomAttribute<HostingAttribute>() is not null && f.GetCustomAttribute<DisabledAttribute>() is null))
-                {
-                    DataManager.AddHosting(field, this, $"MiddlewareData/{realType.Name}_{crc16}/Field_{field.Name}");
-                }
+            {
+                DataManager.AddHosting(field, this, $"{DataRoot}Field_{field.Name}");
             }
         }
 

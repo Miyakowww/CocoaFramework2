@@ -25,6 +25,10 @@ namespace Maila.Cocoa.Framework.Models.Route
 
         private readonly object _lock = new();
 
+        protected static readonly Type UserAutoDataType = typeof(UserAutoData<>);
+        protected static readonly Type GroupAutoDataType = typeof(GroupAutoData<>);
+        protected static readonly Type SourceAutoDataType = typeof(SourceAutoData<>);
+
         public RouteInfo(BotModuleBase module, MethodInfo route, Func<MessageSource, bool> pred)
         {
             this.module = module;
