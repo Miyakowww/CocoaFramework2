@@ -152,8 +152,8 @@ namespace Maila.Cocoa.Framework.Models.Route
                     ? paraType switch
                     {
                         0 => match.Groups[gName].Value,
-                        1 => match.Groups[gName].Captures.ToArray(),
-                        2 => match.Groups[gName].Captures.ToList(),
+                        1 => match.Groups[gName].Captures.Select(c => c.Value).ToArray(),
+                        2 => match.Groups[gName].Captures.Select(c => c.Value).ToList(),
                         _ => null
                     }
                     : _default;

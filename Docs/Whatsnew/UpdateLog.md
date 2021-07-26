@@ -1,5 +1,15 @@
 <h1 align="center">更新日志</h1>
 
+# **2.1.2.1**
+*released July 26, 2021*
+
+<br>
+
+## 修复
+- 修复包含 string[] 和 List\<String> 类型参数的 RegexRoute 无法被调用的问题
+
+<br>
+
 # **2.1.2**
 *released July 25, 2021*
 

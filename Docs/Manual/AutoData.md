@@ -45,4 +45,4 @@ public static string ViewNotes(UserAutoData<string?> paper)
 - AutoData 之间的数据互通性
     - 同一 Module 之内、参数名和参数类型一致、生命周期（是否保存至硬盘）一致的 AutoData 之间数据互通
 - 性能
-    - 本功能依赖于 DataManager 的数据托管功能，因此不推荐用于存储过于庞大的数据
+    - 本功能依赖于 DataManager 的数据托管功能，因此不推荐用于存储过于庞大的数据。不存储至硬盘的 AutoData 没有此限制
