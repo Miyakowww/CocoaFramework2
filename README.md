@@ -21,12 +21,21 @@ Cocoa Framework 是一个基于 mirai 的 QQ 机器人开发框架，致力于�
 <br>
 
 # 开始使用
-[Cocoa Framework 文档](./Docs/index.md) 提供了一些用于快速上手的教程与 API 文档，可以帮助您了解和使用 Cocoa Framework。
+
+尝试快速入门教程：
+- [你好，Cocoa！](./Docs/Quickstart/hellococoa.md)
+
+查看常见功能的案例：
+- [复读机](./Docs/Samples/Repeater.md)
+
+更多案例和 API 文档详见 [Cocoa Framework 文档](./Docs/index.md)
 
 <br>
 
-# 对开源协议的补充
-AGPL 要求所有使用本项目的程序以相同协议开源，但强制要求所有开发者开源不符合我的个人理念。因此仅通过链接使用 Cocoa Framework，未对 Cocoa Framework 进行修改的**非商业项目**可以不开放源代码。但在使用本软件时您仍需遵守法律法规。
+# 相较于 1.x 版本的区别
+
+Cocoa Framework 2 在继承了 1.x 版本核心思路的同时进行了完全的重构，尽可能地使开发者只需考虑功能本身。同时，与 mirai-api-http 的通讯也改为使用 Cocoa Beans，便于及时跟进 mirai 的新特性。  
+更多新特性请参阅 [Cocoa Framework 2 中的新特性](./Docs/Whatsnew/NewFeatures.md) 和 [更新日志](./Docs/Whatsnew/UpdateLog.md)
 
 <br>
 
