@@ -1,9 +1,42 @@
 <h1 align="center">更新日志</h1>
 
-# **2.1.2.1**
-*released July 26, 2021*
+# **2.1.3**
+*released August 1, 2021*
+
+## 请注意！
+此版本对数据存储路径中标识符的计算方式进行了更改，以解决更新后数据丢失的问题。部分数据需要手动进行调整。
+
+涉及到的内容：
+- `data/ModuleData` 文件夹
+- `data/MiddlewareData` 文件夹
+- `data/ModuleData/*/UserAutoData.json` 文件
+- `data/ModuleData/*/GroupAutoData.json` 文件
+- `data/ModuleData/*/SourceAutoData.json` 文件
+
+推荐的调整方式：
+- 文件夹
+    - 备份并删除相关文件夹
+    - 更新 Cocoa Framework 并至少启动一次机器人程序
+    - 检查文件夹，会发现文件夹名的后缀相较之前出现变化
+    - 将旧文件夹中的文件移动到对应的新文件夹中
+    - 如果您使用过 2.1.2 版本或 2.1.2.1 版本，之前的 Middleware 数据会被错误地放置到 ModuleData 文件夹中。当前版本已经修复了这个问题，但您需要手动把它们恢复到 MiddlewareData 文件夹中。
+- 文件
+    - 有些文件内容为空，这些文件您可以直接忽略
+    - 包含数据的文件需要您自行比较和修改，替换工具可以减轻一部分工作量
+
+## 修复
+- 修复 Middleware 的数据被放置到 ModuleData 文件夹中的问题
+
+## 变动
+- 发送消息相关方法的返回值和部分参数更改为不可为空
+
+## 新特性
+- ListeningTarget 支持自定义监听目标
 
 <br>
+
+# **2.1.2.1**
+*released July 26, 2021*
 
 ## 修复
 - 修复包含 string[] 和 List\<String> 类型参数的 RegexRoute 无法被调用的问题

@@ -58,3 +58,12 @@ public class ListeningTarget
     > 要监听的 QQ 号  
     > `src` MessageSource  
     > 要监听的消息源
+- CustomTarget
+    > 自定义监听目标
+    > ```C#
+    > public static ListeningTarget CustomTarget(Predicate<MessageSource> pred);
+    > ```
+    >
+    > ### 参数
+    > `pred` Predicate\<MessageSource>  
+    > 目标的判定规则  

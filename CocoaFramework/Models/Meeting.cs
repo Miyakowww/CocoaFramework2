@@ -187,7 +187,7 @@ namespace Maila.Cocoa.Framework.Models
             Meeting m = new(ListeningTarget.FromTarget(src), proc);
             if (m.InternalRun(src, null) != LockState.Finished)
             {
-                ModuleCore.AddLock(m.Run, src => m.target.Fit(src));
+                ModuleCore.AddLock(m.Run, m.target.Pred);
             }
         }
 
@@ -201,7 +201,7 @@ namespace Maila.Cocoa.Framework.Models
             Meeting m = new(target, proc);
             if (m.InternalRun(null, null) != LockState.Finished)
             {
-                ModuleCore.AddLock(m.Run, src => m.target.Fit(src));
+                ModuleCore.AddLock(m.Run, m.target.Pred);
             }
         }
     }

@@ -24,49 +24,35 @@ namespace Maila.Cocoa.Framework.Models
         public override int GetHashCode()
             => Id.GetHashCode();
 
-        public int? SendMessage(string? message)
+        public int SendMessage(string message)
             => SendMessageAsync(message).Result;
 
-        public int? SendMessage(params IMessage[] chain)
+        public int SendMessage(params IMessage[] chain)
             => SendMessageAsync(chain).Result;
 
-        public Task<int?> SendMessageAsync(string? message)
+        public Task<int> SendMessageAsync(string message)
         {
-            if (string.IsNullOrEmpty(message))
-            {
-                return Task.FromResult<int?>(null);
-            }
             return BotAPI.SendGroupMessage(Id, new PlainMessage(message));
         }
 
-        public Task<int?> SendMessageAsync(params IMessage[] chain)
+        public Task<int> SendMessageAsync(params IMessage[] chain)
             => BotAPI.SendGroupMessage(Id, chain);
 
-        public int? SendImage(string path)
+        public int SendImage(string path)
             => SendImageAsync(path).Result;
 
-        public async Task<int?> SendImageAsync(string path)
+        public async Task<int> SendImageAsync(string path)
         {
             var image = await BotAPI.UploadImage(UploadType.Group, path);
-            if (image is null)
-            {
-                return null;
-            }
-
             return await BotAPI.SendGroupMessage(Id, image);
         }
 
-        public int? SendVoice(string path)
+        public int SendVoice(string path)
             => SendVoiceAsync(path).Result;
 
-        public async Task<int?> SendVoiceAsync(string path)
+        public async Task<int> SendVoiceAsync(string path)
         {
             var voice = await BotAPI.UploadVoice(path);
-            if (voice is null)
-            {
-                return null;
-            }
-
             return await BotAPI.SendGroupMessage(Id, voice);
         }
 

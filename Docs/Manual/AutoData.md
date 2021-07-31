@@ -16,7 +16,7 @@ public static string TakeNotes(string notes, UserAutoData<string?> paper)
 [TextRoute("查看笔记")]
 public static string ViewNotes(UserAutoData<string?> paper)
 {
-    if(paper.Value is null)
+    if (paper.Value is null)
     {
         return "您没有记下任何内容";
     }

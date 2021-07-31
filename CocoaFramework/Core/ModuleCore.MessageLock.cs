@@ -20,7 +20,7 @@ namespace Maila.Cocoa.Framework.Core
             => messageLocks.Add(new MessageLock(lockRun, predicate, TimeSpan.Zero, null).Run);
 
         public static void AddLock(Func<MessageSource, QMessage, LockState> lockRun, ListeningTarget target)
-            => messageLocks.Add(new MessageLock(lockRun, target.Fit, TimeSpan.Zero, null).Run);
+            => messageLocks.Add(new MessageLock(lockRun, target.Pred, TimeSpan.Zero, null).Run);
 
         public static void AddLock(Func<MessageSource, QMessage, LockState> lockRun, MessageSource src)
             => messageLocks.Add(new MessageLock(lockRun, s => s.Equals(src), TimeSpan.Zero, null).Run);
@@ -29,7 +29,7 @@ namespace Maila.Cocoa.Framework.Core
             => messageLocks.Add(new MessageLock(lockRun, predicate, timeout, onTimeout).Run);
 
         public static void AddLock(Func<MessageSource, QMessage, LockState> lockRun, ListeningTarget target, TimeSpan timeout, Action? onTimeout = null)
-            => messageLocks.Add(new MessageLock(lockRun, target.Fit, timeout, onTimeout).Run);
+            => messageLocks.Add(new MessageLock(lockRun, target.Pred, timeout, onTimeout).Run);
 
         public static void AddLock(Func<MessageSource, QMessage, LockState> lockRun, MessageSource src, TimeSpan timeout, Action? onTimeout = null)
             => messageLocks.Add(new MessageLock(lockRun, s => s.Equals(src), timeout, onTimeout).Run);

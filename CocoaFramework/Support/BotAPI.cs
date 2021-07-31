@@ -198,7 +198,7 @@ namespace Maila.Cocoa.Framework.Support
         /// <summary>Get the details of a specified file.</summary>
         /// <exception cref="NotConnectedException" />
         /// <exception cref="WebException" />
-        public static Task<FileDetails?> GetGroupFileInfo(long groupId, string fileId)
+        public static Task<FileDetails> GetGroupFileInfo(long groupId, string fileId)
         {
             return BotCore.Connected
                 ? MiraiAPI.GetGroupFileInfo(BotCore.host!, BotCore.SessionKey!, groupId, fileId)
@@ -323,7 +323,7 @@ namespace Maila.Cocoa.Framework.Support
         /// <exception cref="MiraiException" />
         /// <exception cref="NotConnectedException" />
         /// <exception cref="WebException" />
-        public static Task<GroupConfig?> GetGroupConfig(long groupId)
+        public static Task<GroupConfig> GetGroupConfig(long groupId)
         {
             return BotCore.Connected
                 ? MiraiAPI.GetGroupConfig(BotCore.host!, BotCore.SessionKey!, groupId)
@@ -371,7 +371,7 @@ namespace Maila.Cocoa.Framework.Support
         /// <exception cref="MiraiException" />
         /// <exception cref="NotConnectedException" />
         /// <exception cref="WebException" />
-        public static Task<IImageMessage?> UploadImage(UploadType type, Stream imgStream)
+        public static Task<IImageMessage> UploadImage(UploadType type, Stream imgStream)
         {
             return BotCore.Connected
                 ? MiraiAPI.UploadImage(BotCore.host!, BotCore.SessionKey!, type, imgStream)
@@ -382,7 +382,7 @@ namespace Maila.Cocoa.Framework.Support
         /// <returns>IImageMessage</returns>
         /// <exception cref="MiraiException" />
         /// <exception cref="WebException" />
-        public static async Task<IImageMessage?> UploadImage(UploadType type, string path)
+        public static async Task<IImageMessage> UploadImage(UploadType type, string path)
         {
             await using FileStream fs = new(path, FileMode.Open);
             return await UploadImage(type, fs);
@@ -393,7 +393,7 @@ namespace Maila.Cocoa.Framework.Support
         /// <exception cref="MiraiException" />
         /// <exception cref="NotConnectedException" />
         /// <exception cref="WebException" />
-        public static Task<IVoiceMessage?> UploadVoice(Stream voiceStream)
+        public static Task<IVoiceMessage> UploadVoice(Stream voiceStream)
         {
             return BotCore.Connected
                 ? MiraiAPI.UploadVoice(BotCore.host!, BotCore.SessionKey!, voiceStream)
@@ -404,7 +404,7 @@ namespace Maila.Cocoa.Framework.Support
         /// <returns>IVoiceMessage</returns>
         /// <exception cref="MiraiException" />
         /// <exception cref="WebException" />
-        public static async Task<IVoiceMessage?> UploadVoice(string path)
+        public static async Task<IVoiceMessage> UploadVoice(string path)
         {
             await using FileStream fs = new(path, FileMode.Open);
             return await UploadVoice(fs);
@@ -415,7 +415,7 @@ namespace Maila.Cocoa.Framework.Support
         /// <exception cref="MiraiException" />
         /// <exception cref="NotConnectedException" />
         /// <exception cref="WebException" />
-        public static Task<string?> UploadFileAndSend(long groupId, string path, Stream fileStream)
+        public static Task<string> UploadFileAndSend(long groupId, string path, Stream fileStream)
         {
             return BotCore.Connected
                 ? MiraiAPI.UploadFileAndSend(BotCore.host!, BotCore.SessionKey!, groupId, path, fileStream)
@@ -479,7 +479,7 @@ namespace Maila.Cocoa.Framework.Support
         /// <exception cref="MiraiException" />
         /// <exception cref="NotConnectedException" />
         /// <exception cref="WebException" />
-        private static async Task<int?> CommonSendMessage(long id, bool isGroup, IMessage[] chain, int? quote)
+        private static async Task<int> CommonSendMessage(long id, bool isGroup, IMessage[] chain, int? quote)
         {
             if (!BotCore.Connected)
             {
@@ -515,7 +515,7 @@ namespace Maila.Cocoa.Framework.Support
                 }
                 catch { continue; }
 
-                return msgid;
+                return msgid.Value;
             }
 
             throw new MiraiException(5);
@@ -524,7 +524,7 @@ namespace Maila.Cocoa.Framework.Support
         /// <summary>Send message to private chat.</summary>
         /// <exception cref="MiraiException" />
         /// <exception cref="WebException" />
-        public static Task<int?> SendPrivateMessage(long qqId, string message)
+        public static Task<int> SendPrivateMessage(long qqId, string message)
         {
             return SendPrivateMessage(qqId, new PlainMessage(message));
         }
@@ -532,7 +532,7 @@ namespace Maila.Cocoa.Framework.Support
         /// <summary>Send message to private chat.</summary>
         /// <exception cref="MiraiException" />
         /// <exception cref="WebException" />
-        public static Task<int?> SendPrivateMessage(long qqId, params IMessage[] chain)
+        public static Task<int> SendPrivateMessage(long qqId, params IMessage[] chain)
         {
             return CommonSendMessage(qqId, false, chain, null);
         }
@@ -540,7 +540,7 @@ namespace Maila.Cocoa.Framework.Support
         /// <summary>Send reply message to private chat.</summary>
         /// <exception cref="MiraiException" />
         /// <exception cref="WebException" />
-        public static Task<int?> SendPrivateMessage(int? quote, long qqId, string message)
+        public static Task<int> SendPrivateMessage(int? quote, long qqId, string message)
         {
             return SendPrivateMessage(quote, qqId, new PlainMessage(message));
         }
@@ -548,7 +548,7 @@ namespace Maila.Cocoa.Framework.Support
         /// <summary>Send reply message to private chat.</summary>
         /// <exception cref="MiraiException" />
         /// <exception cref="WebException" />
-        public static Task<int?> SendPrivateMessage(int? quote, long qqId, params IMessage[] chain)
+        public static Task<int> SendPrivateMessage(int? quote, long qqId, params IMessage[] chain)
         {
             return CommonSendMessage(qqId, false, chain, quote);
         }
@@ -556,7 +556,7 @@ namespace Maila.Cocoa.Framework.Support
         /// <summary>Send message to group.</summary>
         /// <exception cref="MiraiException" />
         /// <exception cref="WebException" />
-        public static Task<int?> SendGroupMessage(long groupId, string message)
+        public static Task<int> SendGroupMessage(long groupId, string message)
         {
             return SendGroupMessage(groupId, new PlainMessage(message));
         }
@@ -564,7 +564,7 @@ namespace Maila.Cocoa.Framework.Support
         /// <summary>Send reply message to group.</summary>
         /// <exception cref="MiraiException" />
         /// <exception cref="WebException" />
-        public static Task<int?> SendGroupMessage(int? quote, long groupId, string message)
+        public static Task<int> SendGroupMessage(int? quote, long groupId, string message)
         {
             return SendGroupMessage(quote, groupId, new PlainMessage(message));
         }
@@ -574,7 +574,7 @@ namespace Maila.Cocoa.Framework.Support
         /// <exception cref="MiraiException" />
         /// <exception cref="NotConnectedException" />
         /// <exception cref="WebException" />
-        public static Task<int?> SendFriendMessage(long qqId, params IMessage[] chain)
+        public static Task<int> SendFriendMessage(long qqId, params IMessage[] chain)
         {
             return BotCore.Connected
                 ? MiraiAPI.SendFriendMessage(BotCore.host!, BotCore.SessionKey!, qqId, chain)
@@ -586,7 +586,7 @@ namespace Maila.Cocoa.Framework.Support
         /// <exception cref="MiraiException" />
         /// <exception cref="NotConnectedException" />
         /// <exception cref="WebException" />
-        public static Task<int?> SendFriendMessage(int? quote, long qqId, params IMessage[] chain)
+        public static Task<int> SendFriendMessage(int? quote, long qqId, params IMessage[] chain)
         {
             return BotCore.Connected
                 ? MiraiAPI.SendFriendMessage(BotCore.host!, BotCore.SessionKey!, qqId, quote, chain)
@@ -598,7 +598,7 @@ namespace Maila.Cocoa.Framework.Support
         /// <exception cref="MiraiException" />
         /// <exception cref="NotConnectedException" />
         /// <exception cref="WebException" />
-        public static Task<int?> SendTempMessage(long groupId, long qqId, params IMessage[] chain)
+        public static Task<int> SendTempMessage(long groupId, long qqId, params IMessage[] chain)
         {
             return BotCore.Connected
                 ? MiraiAPI.SendTempMessage(BotCore.host!, BotCore.SessionKey!, groupId, qqId, chain)
@@ -610,7 +610,7 @@ namespace Maila.Cocoa.Framework.Support
         /// <exception cref="MiraiException" />
         /// <exception cref="NotConnectedException" />
         /// <exception cref="WebException" />
-        public static Task<int?> SendTempMessage(int? quote, long groupId, long qqId, params IMessage[] chain)
+        public static Task<int> SendTempMessage(int? quote, long groupId, long qqId, params IMessage[] chain)
         {
             return BotCore.Connected
                 ? MiraiAPI.SendTempMessage(BotCore.host!, BotCore.SessionKey!, groupId, qqId, quote, chain)
@@ -622,7 +622,7 @@ namespace Maila.Cocoa.Framework.Support
         /// <exception cref="MiraiException" />
         /// <exception cref="NotConnectedException" />
         /// <exception cref="WebException" />
-        public static Task<int?> SendGroupMessage(long groupId, params IMessage[] chain)
+        public static Task<int> SendGroupMessage(long groupId, params IMessage[] chain)
         {
             return BotCore.Connected
                 ? MiraiAPI.SendGroupMessage(BotCore.host!, BotCore.SessionKey!, groupId, chain)
@@ -634,7 +634,7 @@ namespace Maila.Cocoa.Framework.Support
         /// <exception cref="MiraiException" />
         /// <exception cref="NotConnectedException" />
         /// <exception cref="WebException" />
-        public static Task<int?> SendGroupMessage(int? quote, long groupId, params IMessage[] chain)
+        public static Task<int> SendGroupMessage(int? quote, long groupId, params IMessage[] chain)
         {
             return BotCore.Connected
                 ? MiraiAPI.SendGroupMessage(BotCore.host!, BotCore.SessionKey!, groupId, quote, chain)

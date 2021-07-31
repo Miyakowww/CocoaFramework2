@@ -74,19 +74,19 @@ namespace Maila.Cocoa.Framework.Models.Route
                     if (typeDefinition == UserAutoDataType)
                     {
                         autoDataIndex.Add((i, 0 + (para.GetCustomAttribute<MemoryOnlyAttribute>() is null ? 0 : 3),
-                                           $"{para.Name} {paraType.AssemblyQualifiedName!.CalculateCRC16():X}",
+                                           $"{para.Name} {paraType.GenericTypeArguments[0].FullName!.CalculateCRC16():X}",
                                            paraType.GenericTypeArguments[0]));
                     }
                     else if (typeDefinition == GroupAutoDataType)
                     {
                         autoDataIndex.Add((i, 1 + (para.GetCustomAttribute<MemoryOnlyAttribute>() is null ? 0 : 3),
-                                           $"{para.Name} {paraType.AssemblyQualifiedName!.CalculateCRC16():X}",
+                                           $"{para.Name} {paraType.GenericTypeArguments[0].FullName!.CalculateCRC16():X}",
                                            paraType.GenericTypeArguments[0]));
                     }
                     else if (typeDefinition == SourceAutoDataType)
                     {
                         autoDataIndex.Add((i, 2 + (para.GetCustomAttribute<MemoryOnlyAttribute>() is null ? 0 : 3),
-                                           $"{para.Name} {paraType.AssemblyQualifiedName!.CalculateCRC16():X}",
+                                           $"{para.Name} {paraType.GenericTypeArguments[0].FullName!.CalculateCRC16():X}",
                                            paraType.GenericTypeArguments[0]));
                     }
                 }

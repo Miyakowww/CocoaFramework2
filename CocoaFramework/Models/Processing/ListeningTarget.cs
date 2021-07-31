@@ -1,24 +1,26 @@
 ﻿// Copyright (c) Maila. All rights reserved.
 // Licensed under the GNU AGPLv3
 
+using System;
+
 namespace Maila.Cocoa.Framework.Models.Processing
 {
     public class ListeningTarget
     {
-        internal long? Group { get; }
-        internal long? User { get; }
-
-        internal bool Fit(MessageSource? src)
-        {
-            bool gFit = Group is null || Group == src?.Group?.Id;
-            bool uFit = User is null || User == src?.User.Id;
-            return gFit && uFit;
-        }
+        internal Predicate<MessageSource> Pred;
 
         private ListeningTarget(long? groupId, long? userId)
         {
-            Group = groupId;
-            User = userId;
+            Pred = src =>
+            {
+                bool gFit = groupId is null || groupId == src?.Group?.Id;
+                bool uFit = userId is null || userId == src?.User.Id;
+                return gFit && uFit;
+            };
+        }
+        private ListeningTarget(Predicate<MessageSource> pred)
+        {
+            Pred = pred;
         }
 
         public static ListeningTarget All { get; } = new(null, null);
@@ -31,5 +33,6 @@ namespace Maila.Cocoa.Framework.Models.Processing
 
         public static ListeningTarget FromTarget(long groupId, long userId) => new(groupId, userId);
         public static ListeningTarget FromTarget(MessageSource src) => new(src.Group?.Id, src.User.Id);
+        public static ListeningTarget CustomTarget(Predicate<MessageSource> pred) => new(pred);
     }
 }

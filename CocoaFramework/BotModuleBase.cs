@@ -49,7 +49,7 @@ namespace Maila.Cocoa.Framework
             #region === Module Info ===
 
             TypeName = realType.Name;
-            DataRoot = $"ModuleData/{TypeName}_{realType.AssemblyQualifiedName!.CalculateCRC16():X}/";
+            DataRoot = $"ModuleData/{TypeName}_{realType.FullName!.CalculateCRC16():X}/";
             if (realType.GetCustomAttribute<BotModuleAttribute>() is { } moduleInfo)
             {
                 Name = moduleInfo.Name;

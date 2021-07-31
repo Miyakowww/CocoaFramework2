@@ -20,7 +20,7 @@ namespace Maila.Cocoa.Framework
         {
             Type realType = GetType();
             TypeName = realType.Name;
-            DataRoot = $"ModuleData/{TypeName}_{realType.AssemblyQualifiedName!.CalculateCRC16():X}/";
+            DataRoot = $"MiddlewareData/{TypeName}_{realType.FullName!.CalculateCRC16():X}/";
 
             InitOverrode = realType.GetMethod(nameof(Init), BindingFlags.Instance | BindingFlags.NonPublic)!.DeclaringType != BaseType;
             DestroyOverrode = realType.GetMethod(nameof(Destroy), BindingFlags.Instance | BindingFlags.NonPublic)!.DeclaringType != BaseType;

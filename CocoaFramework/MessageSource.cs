@@ -55,50 +55,35 @@ namespace Maila.Cocoa.Framework
                 ? Group!.Id.GetHashCode() ^ User.Id.GetHashCode()
                 : User.Id.GetHashCode();
 
-        public int? Send(string? message)
+        public int Send(string message)
             => SendAsync(message).Result;
 
-        public int? Send(params IMessage[] chain)
+        public int Send(params IMessage[] chain)
             => SendAsync(chain).Result;
 
-        public Task<int?> SendAsync(string? message)
+        public Task<int> SendAsync(string message)
         {
-            if (string.IsNullOrEmpty(message))
-            {
-                return Task.FromResult<int?>(null);
-            }
             return SendAsync(new PlainMessage(message));
         }
 
-        public Task<int?> SendAsync(params IMessage[] chain)
+        public Task<int> SendAsync(params IMessage[] chain)
             => IsGroup
                 ? BotAPI.SendGroupMessage(Group!.Id, chain)
                 : BotAPI.SendPrivateMessage(User.Id, chain);
 
 
-        public int? SendEx(bool addAtWhenGroup, string? groupDelimiter, string? message)
+        public int SendEx(bool addAtWhenGroup, string? groupDelimiter, string message)
             => SendExAsync(addAtWhenGroup, groupDelimiter, message).Result;
 
-        public int? SendEx(bool addAtWhenGroup, string? groupDelimiter, params IMessage[] chain)
+        public int SendEx(bool addAtWhenGroup, string? groupDelimiter, params IMessage[] chain)
             => SendExAsync(addAtWhenGroup, groupDelimiter, chain).Result;
 
-        public Task<int?> SendExAsync(bool addAtWhenGroup, string? groupDelimiter, string? message)
+        public Task<int> SendExAsync(bool addAtWhenGroup, string? groupDelimiter, string message)
         {
-            if (string.IsNullOrEmpty(message))
-            {
-                if (IsGroup)
-                {
-                    message = " ";
-                }
-                else
-                {
-                    return Task.FromResult<int?>(null);
-                }
-            }
             return SendExAsync(addAtWhenGroup, groupDelimiter, new PlainMessage(message));
         }
 
-        public Task<int?> SendExAsync(bool addAtWhenGroup, string? groupDelimiter, params IMessage[] chain)
+        public Task<int> SendExAsync(bool addAtWhenGroup, string? groupDelimiter, params IMessage[] chain)
         {
             if (!IsGroup)
             {
@@ -118,22 +103,22 @@ namespace Maila.Cocoa.Framework
         }
 
 
-        public int? SendReplyEx(QMessage quote, bool addAtWhenGroup, string? message)
+        public int SendReplyEx(QMessage quote, bool addAtWhenGroup, string message)
             => SendReplyExAsync(quote, addAtWhenGroup, message).Result;
 
-        public int? SendReplyEx(QMessage quote, bool addAtWhenGroup, params IMessage[] chain)
+        public int SendReplyEx(QMessage quote, bool addAtWhenGroup, params IMessage[] chain)
             => SendReplyExAsync(quote, addAtWhenGroup, chain).Result;
 
-        public Task<int?> SendReplyExAsync(QMessage quote, bool addAtWhenGroup, string? message)
+        public Task<int> SendReplyExAsync(QMessage quote, bool addAtWhenGroup, string message)
         {
             if (string.IsNullOrEmpty(message))
             {
-                message = " ";
+                return SendReplyExAsync(quote, addAtWhenGroup);
             }
             return SendReplyExAsync(quote, addAtWhenGroup, new PlainMessage(message));
         }
 
-        public Task<int?> SendReplyExAsync(QMessage quote, bool addAtWhenGroup, params IMessage[] chain)
+        public Task<int> SendReplyExAsync(QMessage quote, bool addAtWhenGroup, params IMessage[] chain)
         {
             if (IsGroup)
             {
@@ -152,49 +137,37 @@ namespace Maila.Cocoa.Framework
         }
 
 
-        public int? SendPrivate(string? message)
+        public int SendPrivate(string message)
             => SendPrivateAsync(message).Result;
 
-        public int? SendPrivate(params IMessage[] chain)
+        public int SendPrivate(params IMessage[] chain)
             => SendPrivateAsync(chain).Result;
 
-        public Task<int?> SendPrivateAsync(string? message)
+        public Task<int> SendPrivateAsync(string message)
         {
-            if (string.IsNullOrEmpty(message))
-            {
-                return Task.FromResult<int?>(null);
-            }
             return SendPrivateAsync(new PlainMessage(message));
         }
 
-        public Task<int?> SendPrivateAsync(params IMessage[] chain)
+        public Task<int> SendPrivateAsync(params IMessage[] chain)
             => BotAPI.SendPrivateMessage(User.Id, chain);
 
 
         public int? SendImage(string path)
             => SendImageAsync(path).Result;
 
-        public async Task<int?> SendImageAsync(string path)
+        public async Task<int> SendImageAsync(string path)
         {
             var image = await BotAPI.UploadImage(IsGroup ? UploadType.Group : IsFriend ? UploadType.Friend : UploadType.Temp, path);
-            if (image is null)
-            {
-                return null;
-            }
             return await SendAsync(image);
         }
 
 
-        public int? SendVoice(string path)
+        public int SendVoice(string path)
             => SendVoiceAsync(path).Result;
 
-        public async Task<int?> SendVoiceAsync(string path)
+        public async Task<int> SendVoiceAsync(string path)
         {
             var voice = await BotAPI.UploadVoice(path);
-            if (voice is null)
-            {
-                return null;
-            }
             return await SendAsync(voice);
         }
 
