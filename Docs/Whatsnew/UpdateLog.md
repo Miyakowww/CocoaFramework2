@@ -1,5 +1,13 @@
 <h1 align="center">更新日志</h1>
 
+# **2.1.3.1**
+*released August 1, 2021*
+
+## 修复
+- 修复 GroupAutoData 无法读取和保存的问题
+
+<br>
+
 # **2.1.3**
 *released August 1, 2021*
 
@@ -13,16 +21,20 @@
 - `data/ModuleData/*/GroupAutoData.json` 文件
 - `data/ModuleData/*/SourceAutoData.json` 文件
 
+例外：
+- 未使用 AutoData 功能的 Module 可以忽略以 AutoData.json 结尾的文件
+- 未使用数据托管和 AutoData 功能的 Module 和 Middleware 可以忽略对应的数据文件夹
+
 推荐的调整方式：
 - 文件夹
-    - 备份并删除相关文件夹
-    - 更新 Cocoa Framework 并至少启动一次机器人程序
-    - 检查文件夹，会发现文件夹名的后缀相较之前出现变化
-    - 将旧文件夹中的文件移动到对应的新文件夹中
-    - 如果您使用过 2.1.2 版本或 2.1.2.1 版本，之前的 Middleware 数据会被错误地放置到 ModuleData 文件夹中。当前版本已经修复了这个问题，但您需要手动把它们恢复到 MiddlewareData 文件夹中。
+    1. 备份并删除相关文件夹
+    2. 更新 Cocoa Framework 并至少启动一次机器人程序
+    3. 检查文件夹，会发现文件夹名的后缀相较之前出现变化
+    4. 将旧文件夹中的文件移动到对应的新文件夹中
+    5. 如果您使用过 2.1.2 版本或 2.1.2.1 版本，之前的 Middleware 数据会被错误地放置到 ModuleData 文件夹中。当前版本已经修复了这个问题，但您需要手动把它们恢复到 MiddlewareData 文件夹中。
 - 文件
-    - 有些文件内容为空，这些文件您可以直接忽略
-    - 包含数据的文件需要您自行比较和修改，替换工具可以减轻一部分工作量
+    1. 有些文件内容为空（仅包含一对大括号），这些文件您可以直接忽略
+    2. 包含数据的文件需要您自行比较和修改，替换工具可以减轻一部分工作量
 
 ## 修复
 - 修复 Middleware 的数据被放置到 ModuleData 文件夹中的问题

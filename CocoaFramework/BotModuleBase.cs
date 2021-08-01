@@ -261,19 +261,20 @@ namespace Maila.Cocoa.Framework
 
         internal object? GetUserAutoData(MessageSource src, string name, Type type)
         {
-            if (!userAutoDataCache.TryGetValue(src.User.Id, out var _vals))
+            var key = src.User.Id;
+            if (!userAutoDataCache.TryGetValue(key, out var _vals))
             {
                 _vals = new();
-                userAutoDataCache[src.User.Id] = _vals;
+                userAutoDataCache[key] = _vals;
             }
             if (_vals.TryGetValue(name, out var _val))
             {
                 return _val;
             }
-            if (!userAutoData.TryGetValue(src.User.Id, out var vals))
+            if (!userAutoData.TryGetValue(key, out var vals))
             {
                 vals = new();
-                userAutoData[src.User.Id] = vals;
+                userAutoData[key] = vals;
             }
             if (!vals.ContainsKey(name))
             {
@@ -281,25 +282,26 @@ namespace Maila.Cocoa.Framework
             }
             _val = Activator.CreateInstance(UserAutoDataType.MakeGenericType(type),
                                             BindingFlags.NonPublic | BindingFlags.Instance, null,
-                                            new object[] { userAutoData, src.User.Id, name }, null);
+                                            new object[] { userAutoData, key, name }, null);
             _vals[name] = _val;
             return _val;
         }
         internal object? GetGroupAutoData(MessageSource src, string name, Type type)
         {
-            if (!groupAutoDataCache.TryGetValue(src.User.Id, out var _vals))
+            var key = src.Group?.Id ?? 0;
+            if (!groupAutoDataCache.TryGetValue(key, out var _vals))
             {
                 _vals = new();
-                groupAutoDataCache[src.User.Id] = _vals;
+                groupAutoDataCache[key] = _vals;
             }
             if (_vals.TryGetValue(name, out var _val))
             {
                 return _val;
             }
-            if (!groupAutoData.TryGetValue(src.User.Id, out var vals))
+            if (!groupAutoData.TryGetValue(key, out var vals))
             {
                 vals = new();
-                groupAutoData[src.User.Id] = vals;
+                groupAutoData[key] = vals;
             }
             if (!vals.ContainsKey(name))
             {
@@ -307,7 +309,7 @@ namespace Maila.Cocoa.Framework
             }
             _val = Activator.CreateInstance(GroupAutoDataType.MakeGenericType(type),
                                             BindingFlags.NonPublic | BindingFlags.Instance, null,
-                                            new object[] { groupAutoData, src.Group?.Id ?? 0, name }, null);
+                                            new object[] { groupAutoData, key, name }, null);
             _vals[name] = _val;
             return _val;
         }
@@ -340,19 +342,20 @@ namespace Maila.Cocoa.Framework
         }
         internal object? GetUserTempData(MessageSource src, string name, Type type)
         {
-            if (!userTempDataCache.TryGetValue(src.User.Id, out var _vals))
+            var key = src.User.Id;
+            if (!userTempDataCache.TryGetValue(key, out var _vals))
             {
                 _vals = new();
-                userTempDataCache[src.User.Id] = _vals;
+                userTempDataCache[key] = _vals;
             }
             if (_vals.TryGetValue(name, out var _val))
             {
                 return _val;
             }
-            if (!userTempData.TryGetValue(src.User.Id, out var vals))
+            if (!userTempData.TryGetValue(key, out var vals))
             {
                 vals = new();
-                userTempData[src.User.Id] = vals;
+                userTempData[key] = vals;
             }
             if (!vals.ContainsKey(name))
             {
@@ -360,25 +363,26 @@ namespace Maila.Cocoa.Framework
             }
             _val = Activator.CreateInstance(UserAutoDataType.MakeGenericType(type),
                                             BindingFlags.NonPublic | BindingFlags.Instance, null,
-                                            new object[] { userTempData, src.User.Id, name }, null);
+                                            new object[] { userTempData, key, name }, null);
             _vals[name] = _val;
             return _val;
         }
         internal object? GetGroupTempData(MessageSource src, string name, Type type)
         {
-            if (!groupTempDataCache.TryGetValue(src.User.Id, out var _vals))
+            var key = src.Group?.Id ?? 0;
+            if (!groupTempDataCache.TryGetValue(key, out var _vals))
             {
                 _vals = new();
-                groupTempDataCache[src.User.Id] = _vals;
+                groupTempDataCache[key] = _vals;
             }
             if (_vals.TryGetValue(name, out var _val))
             {
                 return _val;
             }
-            if (!groupTempData.TryGetValue(src.User.Id, out var vals))
+            if (!groupTempData.TryGetValue(key, out var vals))
             {
                 vals = new();
-                groupTempData[src.User.Id] = vals;
+                groupTempData[key] = vals;
             }
             if (!vals.ContainsKey(name))
             {
@@ -386,7 +390,7 @@ namespace Maila.Cocoa.Framework
             }
             _val = Activator.CreateInstance(GroupAutoDataType.MakeGenericType(type),
                                             BindingFlags.NonPublic | BindingFlags.Instance, null,
-                                            new object[] { groupTempData, src.Group?.Id ?? 0, name }, null);
+                                            new object[] { groupTempData, key, name }, null);
             _vals[name] = _val;
             return _val;
         }
