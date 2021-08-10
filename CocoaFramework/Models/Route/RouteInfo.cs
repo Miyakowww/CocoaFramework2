@@ -3,6 +3,7 @@
 
 using System;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
 namespace Maila.Cocoa.Framework.Models.Route
@@ -35,7 +36,8 @@ namespace Maila.Cocoa.Framework.Models.Route
             this.route = route;
             this.pred = pred;
 
-            isThreadSafe = route.GetCustomAttribute<ThreadSafeAttribute>() is not null;
+            isThreadSafe = route.GetCustomAttribute<ThreadSafeAttribute>() is not null
+                        || route.GetCustomAttribute<AsyncStateMachineAttribute>() is not null;
             groupAvailable = route.GetCustomAttribute<DisableInGroupAttribute>() is null;
             privateAvailable = route.GetCustomAttribute<DisableInPrivateAttribute>() is null;
 

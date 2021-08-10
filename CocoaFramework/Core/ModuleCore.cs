@@ -77,6 +77,7 @@ namespace Maila.Cocoa.Framework.Core
                 if ((state & LockState.NotFinished) != 0) // Whether end execution
                 {
                     OnMessageFinished(src, msg, origSrc, origMsg, true, null);
+                    return;
                 }
             }
 

@@ -1,5 +1,16 @@
 <h1 align="center">更新日志</h1>
 
+# **2.1.3.2**
+*released August 10, 2021*
+
+## 修复
+- 修复 Message Lock 执行完成后不会结束处理的问题
+
+## 变动
+- 异步路由和 Module 中的异步覆写方法会被认为是线程安全的，即使没有添加 ThreadSafe 特性
+
+<br>
+
 # **2.1.3.1**
 *released August 1, 2021*
 

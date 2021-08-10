@@ -6,6 +6,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using Maila.Cocoa.Framework.Models.Route;
 using Maila.Cocoa.Framework.Support;
@@ -82,7 +83,9 @@ namespace Maila.Cocoa.Framework
 
             MethodInfo onMessageInfo = realType.GetMethod(nameof(OnMessage), BindingFlags.Instance | BindingFlags.NonPublic)!;
             OnMessageOverrode = onMessageInfo.DeclaringType != BaseType && onMessageInfo.GetCustomAttribute<DisabledAttribute>() is null;
-            OnMessageThreadSafe = !OnMessageOverrode || onMessageInfo.GetCustomAttribute<ThreadSafeAttribute>() is not null;
+            OnMessageThreadSafe = !OnMessageOverrode
+                                || onMessageInfo.GetCustomAttribute<ThreadSafeAttribute>() is not null
+                                || onMessageInfo.GetCustomAttribute<AsyncStateMachineAttribute>() is not null;
             OnMessageEnableInGroup = OnMessageOverrode && onMessageInfo.GetCustomAttribute<DisableInGroupAttribute>() is null;
             OnMessageEnableInPrivate = OnMessageOverrode && onMessageInfo.GetCustomAttribute<DisableInPrivateAttribute>() is null;
             if (OnMessageOverrode)
@@ -101,7 +104,9 @@ namespace Maila.Cocoa.Framework
 
             MethodInfo onMessageFinishedInfo = realType.GetMethod(nameof(OnMessageFinished), BindingFlags.Instance | BindingFlags.NonPublic)!;
             OnMessageFinishedOverrode = onMessageFinishedInfo.DeclaringType != BaseType && onMessageFinishedInfo.GetCustomAttribute<DisabledAttribute>() is null;
-            OnMessageFinishedThreadSafe = !OnMessageFinishedOverrode || onMessageFinishedInfo.GetCustomAttribute<ThreadSafeAttribute>() is not null;
+            OnMessageFinishedThreadSafe = !OnMessageFinishedOverrode
+                                        || onMessageFinishedInfo.GetCustomAttribute<ThreadSafeAttribute>() is not null
+                                        || onMessageFinishedInfo.GetCustomAttribute<ThreadSafeAttribute>() is not null;
             OnMessageFinishedEnableInGroup = OnMessageFinishedOverrode && onMessageFinishedInfo.GetCustomAttribute<DisableInGroupAttribute>() is null;
             OnMessageFinishedEnableInPrivate = OnMessageFinishedOverrode && onMessageFinishedInfo.GetCustomAttribute<DisableInPrivateAttribute>() is null;
 
