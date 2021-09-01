@@ -13,8 +13,17 @@ namespace Maila.Cocoa.Framework.Models.Processing
         {
             Pred = src =>
             {
-                bool gFit = groupId is null || groupId == src?.Group?.Id;
-                bool uFit = userId is null || userId == src?.User.Id;
+                if (src is null)
+                {
+                    return true;
+                }
+                if (groupId is null && userId is null)
+                {
+                    return true;
+                }
+
+                bool uFit = userId is null || userId == src.User.Id;
+                bool gFit = groupId is null ? !src.IsGroup : groupId == src.Group?.Id;
                 return gFit && uFit;
             };
         }

@@ -1,5 +1,13 @@
 <h1 align="center">更新日志</h1>
 
+# **2.1.3.3**
+*released September 1, 2021*
+
+## 变动
+- 调整 ListeningTarget 的判定逻辑
+
+<br>
+
 # **2.1.3.2**
 *released August 10, 2021*
 
