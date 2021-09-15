@@ -5,7 +5,7 @@
 <br>
 
 ## 在此之前
-- [启动 Mirai](https://github.com/mamoe/mirai/blob/dev/docs/UserManual.md) 并 [安装 mirai-api-http](https://github.com/mamoe/mirai/blob/dev/docs/UserManual.md#%E5%A6%82%E4%BD%95%E5%AE%89%E8%A3%85%E5%AE%98%E6%96%B9%E6%8F%92%E4%BB%B6)
+- [启动 Mirai](https://github.com/mamoe/mirai/blob/dev/docs/UserManual.md) 并 [安装 mirai-api-http](https://github.com/mamoe/mirai/blob/dev/docs/UserManual.md#%E5%A6%82%E4%BD%95%E5%AE%89%E8%A3%85%E5%AE%98%E6%96%B9%E6%8F%92%E4%BB%B6)，如果使用的是 mirai-api-http 2.x 版本需手动启用 WebSocket
 - 安装 [Visual Studio](https://visualstudio.microsoft.com/zh-hans/) 或其他 IDE
 
 <br>
