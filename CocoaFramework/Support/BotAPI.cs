@@ -1,13 +1,6 @@
 ﻿// Copyright (c) Maila. All rights reserved.
 // Licensed under the GNU AGPLv3
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net;
-using System.Threading;
-using System.Threading.Tasks;
 using Maila.Cocoa.Beans.API;
 using Maila.Cocoa.Beans.Exceptions;
 using Maila.Cocoa.Beans.Models;
@@ -15,6 +8,13 @@ using Maila.Cocoa.Beans.Models.Events;
 using Maila.Cocoa.Beans.Models.Files;
 using Maila.Cocoa.Beans.Models.Messages;
 using Maila.Cocoa.Framework.Core;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Maila.Cocoa.Framework.Support
 {
@@ -479,21 +479,26 @@ namespace Maila.Cocoa.Framework.Support
         /// <exception cref="MiraiException" />
         /// <exception cref="NotConnectedException" />
         /// <exception cref="WebException" />
-        private static async Task<int> CommonSendMessage(long id, bool isGroup, IMessage[] chain, int? quote)
+        private static async Task<int> CommonSendMessage(long id, bool isGroup, IMessage[] chain, int? quote, long? temp)
         {
             if (!BotCore.Connected)
             {
                 throw new NotConnectedException();
             }
 
-            //if (!MiddlewareCore.OnSend(ref id, ref isGroup, ref chain, ref quote))
-            //{
-            //    return 0;
-            //}
+            if (!MiddlewareCore.OnSendMessage(ref id, ref isGroup, ref chain, ref quote))
+            {
+                return 0;
+            }
 
             if (isGroup)
             {
                 return await MiraiAPI.SendGroupMessage(BotCore.host!, BotCore.SessionKey!, id, quote, chain);
+            }
+
+            if (temp is not null)
+            {
+                return await MiraiAPI.SendTempMessage(BotCore.host!, BotCore.SessionKey!, temp.Value, id, quote, chain);
             }
 
             if (BotInfo.HasFriend(id))
@@ -534,7 +539,7 @@ namespace Maila.Cocoa.Framework.Support
         /// <exception cref="WebException" />
         public static Task<int> SendPrivateMessage(long qqId, params IMessage[] chain)
         {
-            return CommonSendMessage(qqId, false, chain, null);
+            return CommonSendMessage(qqId, false, chain, null, null);
         }
 
         /// <summary>Send reply message to private chat.</summary>
@@ -550,7 +555,7 @@ namespace Maila.Cocoa.Framework.Support
         /// <exception cref="WebException" />
         public static Task<int> SendPrivateMessage(int? quote, long qqId, params IMessage[] chain)
         {
-            return CommonSendMessage(qqId, false, chain, quote);
+            return CommonSendMessage(qqId, false, chain, quote, null);
         }
 
         /// <summary>Send message to group.</summary>
@@ -576,9 +581,7 @@ namespace Maila.Cocoa.Framework.Support
         /// <exception cref="WebException" />
         public static Task<int> SendFriendMessage(long qqId, params IMessage[] chain)
         {
-            return BotCore.Connected
-                ? MiraiAPI.SendFriendMessage(BotCore.host!, BotCore.SessionKey!, qqId, chain)
-                : throw new NotConnectedException();
+            return CommonSendMessage(qqId, false, chain, null, null);
         }
 
         /// <summary>Send reply message to friend.</summary>
@@ -588,9 +591,7 @@ namespace Maila.Cocoa.Framework.Support
         /// <exception cref="WebException" />
         public static Task<int> SendFriendMessage(int? quote, long qqId, params IMessage[] chain)
         {
-            return BotCore.Connected
-                ? MiraiAPI.SendFriendMessage(BotCore.host!, BotCore.SessionKey!, qqId, quote, chain)
-                : throw new NotConnectedException();
+            return CommonSendMessage(qqId, false, chain, quote, null);
         }
 
         /// <summary>Send message to group member.</summary>
@@ -600,9 +601,7 @@ namespace Maila.Cocoa.Framework.Support
         /// <exception cref="WebException" />
         public static Task<int> SendTempMessage(long groupId, long qqId, params IMessage[] chain)
         {
-            return BotCore.Connected
-                ? MiraiAPI.SendTempMessage(BotCore.host!, BotCore.SessionKey!, groupId, qqId, chain)
-                : throw new NotConnectedException();
+            return CommonSendMessage(qqId, false, chain, null, groupId);
         }
 
         /// <summary>Send reply message to group member.</summary>
@@ -612,9 +611,7 @@ namespace Maila.Cocoa.Framework.Support
         /// <exception cref="WebException" />
         public static Task<int> SendTempMessage(int? quote, long groupId, long qqId, params IMessage[] chain)
         {
-            return BotCore.Connected
-                ? MiraiAPI.SendTempMessage(BotCore.host!, BotCore.SessionKey!, groupId, qqId, quote, chain)
-                : throw new NotConnectedException();
+            return CommonSendMessage(qqId, false, chain, quote, groupId);
         }
 
         /// <summary>Send message to group.</summary>
@@ -624,9 +621,7 @@ namespace Maila.Cocoa.Framework.Support
         /// <exception cref="WebException" />
         public static Task<int> SendGroupMessage(long groupId, params IMessage[] chain)
         {
-            return BotCore.Connected
-                ? MiraiAPI.SendGroupMessage(BotCore.host!, BotCore.SessionKey!, groupId, chain)
-                : throw new NotConnectedException();
+            return CommonSendMessage(groupId, true, chain, null, null);
         }
 
         /// <summary>Send reply message to group.</summary>
@@ -636,9 +631,7 @@ namespace Maila.Cocoa.Framework.Support
         /// <exception cref="WebException" />
         public static Task<int> SendGroupMessage(int? quote, long groupId, params IMessage[] chain)
         {
-            return BotCore.Connected
-                ? MiraiAPI.SendGroupMessage(BotCore.host!, BotCore.SessionKey!, groupId, quote, chain)
-                : throw new NotConnectedException();
+            return CommonSendMessage(groupId, true, chain, quote, null);
         }
 
         /// <summary>Recall message.</summary>

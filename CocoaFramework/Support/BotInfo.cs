@@ -15,6 +15,10 @@ namespace Maila.Cocoa.Framework.Support
         private static Dictionary<long, Dictionary<long, QMemberInfo>>? members;
         private static Dictionary<long, QFriendInfo>? friends;
 
+        private static readonly TimeSpan CredibleTime = TimeSpan.FromMinutes(1);
+        private static DateTime friendsLastSync = DateTime.MinValue;
+        private static DateTime groupsLastSync = DateTime.MinValue;
+
         public static async Task ReloadAll()
         {
             Task f = ReloadFriends();
@@ -43,6 +47,7 @@ namespace Maila.Cocoa.Framework.Support
 
             BotInfo.groups = groups;
             BotInfo.members = members;
+            groupsLastSync = DateTime.Now;
         }
 
         public static async Task<bool> ReloadGroupMembers(long groupId)
@@ -72,24 +77,61 @@ namespace Maila.Cocoa.Framework.Support
         public static async Task ReloadFriends()
         {
             friends = (await BotAPI.GetFriendList()).ToDictionary(f => f.Id);
+            friendsLastSync = DateTime.Now;
         }
 
         public static bool HasGroup(long groupId)
-            => groups?.ContainsKey(groupId) ?? false;
+        {
+            if (DateTime.Now - groupsLastSync > CredibleTime)
+            {
+                ReloadAllGroupMembers().Wait();
+            }
+            return groups?.ContainsKey(groupId) ?? false;
+        }
 
         public static QGroupInfo? GetGroupInfo(long groupId)
-            => groups?.GetValueOrDefault(groupId);
+        {
+            if (DateTime.Now - groupsLastSync > CredibleTime)
+            {
+                ReloadAllGroupMembers().Wait();
+            }
+            return groups?.GetValueOrDefault(groupId);
+        }
 
         public static QMemberInfo? GetMemberInfo(long groupId, long memberId)
-            => members?.GetValueOrDefault(groupId)?.GetValueOrDefault(memberId);
+        {
+            if (DateTime.Now - groupsLastSync > CredibleTime)
+            {
+                ReloadAllGroupMembers().Wait();
+            }
+            return members?.GetValueOrDefault(groupId)?.GetValueOrDefault(memberId);
+        }
 
         public static bool HasFriend(long qqId)
-            => friends?.ContainsKey(qqId) ?? false;
+        {
+            if (DateTime.Now - friendsLastSync > CredibleTime)
+            {
+                ReloadFriends().Wait();
+            }
+            return friends?.ContainsKey(qqId) ?? false;
+        }
 
         public static QFriendInfo? GetFriendInfo(long qqId)
-            => friends?.GetValueOrDefault(qqId);
+        {
+            if (DateTime.Now - friendsLastSync > CredibleTime)
+            {
+                ReloadFriends().Wait();
+            }
+            return friends?.GetValueOrDefault(qqId);
+        }
 
         public static long[] GetTempPath(long qqId)
-            => members?.Where(p => p.Value.ContainsKey(qqId)).Select(p => p.Key).ToArray() ?? Array.Empty<long>();
+        {
+            if (DateTime.Now - groupsLastSync > CredibleTime)
+            {
+                ReloadAllGroupMembers().Wait();
+            }
+            return members?.Where(p => p.Value.ContainsKey(qqId)).Select(p => p.Key).ToArray() ?? Array.Empty<long>();
+        }
     }
 }

@@ -112,6 +112,18 @@ namespace Maila.Cocoa.Framework
         }
     }
 
+    [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
+    public sealed class AtRouteAttribute : Attribute
+    {
+        public string Text { get; }
+        public bool IgnoreCase { get; set; } = true;
+
+        public AtRouteAttribute(string text)
+        {
+            Text = text;
+        }
+    }
+
     [AttributeUsage(AttributeTargets.Parameter)]
     public sealed class GroupNameAttribute : Attribute
     {

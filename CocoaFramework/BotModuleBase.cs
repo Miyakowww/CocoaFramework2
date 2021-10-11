@@ -161,6 +161,18 @@ namespace Maila.Cocoa.Framework
                                                                                        ? src => rreqs.Any(p => p(src))
                                                                                        : src => true));
                 }
+
+                if (method.GetCustomAttributes<AtRouteAttribute>().ToArray() is { Length: > 0 } atRouteInfos)
+                {
+                    var rreqs = method.GetCustomAttributes<IdentityRequirementsAttribute>()
+                                      .Select<IdentityRequirementsAttribute, Func<MessageSource, bool>>(r => src => r.Check(src.User.Identity, src.Permission))
+                                      .ToList();
+                    string[] texts = atRouteInfos.Select(t => t.Text).ToArray();
+                    bool[] ignoreCases = atRouteInfos.Select(t => t.IgnoreCase).ToArray();
+                    routes.Add(new AtRouteInfo(this, method, texts, ignoreCases, rreqs.Any()
+                                                                                       ? src => rreqs.Any(p => p(src))
+                                                                                       : src => true));
+                }
             }
 
             #endregion

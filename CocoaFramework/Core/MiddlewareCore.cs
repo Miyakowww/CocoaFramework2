@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Maila. All rights reserved.
 // Licensed under the GNU AGPLv3
 
+using Maila.Cocoa.Beans.Models.Messages;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -93,6 +94,19 @@ namespace Maila.Cocoa.Framework.Core
 
             Middlewares = ImmutableArray<BotMiddlewareBase>.Empty;
             OnMessage = null;
+        }
+
+        internal static bool OnSendMessage(ref long id, ref bool isGroup, ref IMessage[] chain, ref int? quote)
+        {
+            foreach (var m in Middlewares)
+            {
+                bool send = m.OnSendMessageInternal(ref id, ref isGroup, ref chain, ref quote);
+                if (!send)
+                {
+                    return false;
+                }
+            }
+            return true;
         }
     }
 }

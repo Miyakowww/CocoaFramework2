@@ -26,7 +26,12 @@ namespace Maila.Cocoa.Framework
 
         public MessageSource(long qqId)
         {
-            IsFriend = BotInfo.HasFriend(qqId);
+            if (!BotInfo.HasFriend(qqId))
+            {
+                _ = BotInfo.ReloadFriends();
+            }
+
+            IsFriend = true;
             IsGroup = false;
             IsTemp = false;
             Group = null;

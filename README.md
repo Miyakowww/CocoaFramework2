@@ -28,7 +28,7 @@ Cocoa Framework 是一个基于 mirai 的 QQ 机器人开发框架，致力于�
 查看常见功能的案例：
 - [复读机](./Docs/Samples/Repeater.md)
 
-更多案例和 API 文档详见 [Cocoa Framework 文档](./Docs/index.md)
+API 文档和更多案例详见 [Cocoa Framework 文档](./Docs/index.md)
 
 <br>
 

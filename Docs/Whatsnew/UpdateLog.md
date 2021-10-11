@@ -1,5 +1,15 @@
 <h1 align="center">更新日志</h1>
 
+# **2.1.4**
+*released October 11, 2021*
+
+## 新特性
+- 新增 AtRoute
+- Middleware 新增 OnSendMessage
+- BotInfo 支持自动刷新
+
+<br>
+
 # **2.1.3.3**
 *released September 1, 2021*
 

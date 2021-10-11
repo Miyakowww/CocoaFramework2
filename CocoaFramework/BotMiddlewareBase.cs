@@ -1,10 +1,12 @@
 ﻿// Copyright (c) Maila. All rights reserved.
 // Licensed under the GNU AGPLv3
 
+using Maila.Cocoa.Beans.Models.Messages;
+using Maila.Cocoa.Framework.Support;
 using System;
 using System.Linq;
 using System.Reflection;
-using Maila.Cocoa.Framework.Support;
+using System.Runtime.CompilerServices;
 
 namespace Maila.Cocoa.Framework
 {
@@ -27,7 +29,15 @@ namespace Maila.Cocoa.Framework
 
             MethodInfo onMessageInfo = realType.GetMethod(nameof(OnMessage), BindingFlags.Instance | BindingFlags.NonPublic)!;
             OnMessageOverrode = onMessageInfo.DeclaringType != BaseType && onMessageInfo.GetCustomAttribute<DisabledAttribute>() is null;
-            OnMessageThreadSafe = !OnMessageOverrode || onMessageInfo.GetCustomAttribute<ThreadSafeAttribute>() is not null;
+            OnMessageThreadSafe = !OnMessageOverrode
+                               || onMessageInfo.GetCustomAttribute<ThreadSafeAttribute>() is not null
+                               || onMessageInfo.GetCustomAttribute<AsyncStateMachineAttribute>() is not null;
+
+            MethodInfo onSendMessageInfo = realType.GetMethod(nameof(OnSendMessage), BindingFlags.Instance | BindingFlags.NonPublic)!;
+            OnSendMessageOverrode = onSendMessageInfo.DeclaringType != BaseType && onSendMessageInfo.GetCustomAttribute<DisabledAttribute>() is null;
+            OnSendMessageThreadSafe = !OnSendMessageOverrode
+                                   || onSendMessageInfo.GetCustomAttribute<ThreadSafeAttribute>() is not null
+                                   || onSendMessageInfo.GetCustomAttribute<AsyncStateMachineAttribute>() is not null;
 
             foreach (var field in realType
                     .GetFields(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
@@ -67,6 +77,32 @@ namespace Maila.Cocoa.Framework
                 lock (onMessageLock)
                 {
                     OnMessage(src, msg, next);
+                }
+            }
+        }
+
+        internal bool OnSendMessageOverrode { get; }
+        internal bool OnSendMessageThreadSafe { get; }
+        private readonly object onSendMessageLock = new();
+
+        protected internal virtual bool OnSendMessage(ref long id, ref bool isGroup, ref IMessage[] chain, ref int? quote)
+            => true;
+
+        internal bool OnSendMessageInternal(ref long id, ref bool isGroup, ref IMessage[] chain, ref int? quote)
+        {
+            if (!OnSendMessageOverrode)
+            {
+                return true;
+            }
+            if (OnSendMessageThreadSafe)
+            {
+                return OnSendMessage(ref id, ref isGroup, ref chain, ref quote);
+            }
+            else
+            {
+                lock (onSendMessageLock)
+                {
+                    return OnSendMessage(ref id, ref isGroup, ref chain, ref quote);
                 }
             }
         }
