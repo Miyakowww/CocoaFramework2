@@ -1,5 +1,13 @@
 <h1 align="center">更新日志</h1>
 
+# **2.1.4.1**
+*released October 18, 2021*
+
+## 修复
+- 修复语音无法发送的问题
+
+<br>
+
 # **2.1.4**
 *released October 11, 2021*
 
