@@ -49,7 +49,7 @@ namespace Maila.Cocoa.Framework.Models.Route
 
         public bool Run(MessageSource src, QMessage msg)
         {
-            if (string.IsNullOrEmpty(msg.PlainText))
+            if (msg.PlainText is null)
             {
                 return false;
             }

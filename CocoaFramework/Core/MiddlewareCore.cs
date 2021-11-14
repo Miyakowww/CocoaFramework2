@@ -1,13 +1,13 @@
 ﻿// Copyright (c) Maila. All rights reserved.
 // Licensed under the GNU AGPLv3
 
-using Maila.Cocoa.Beans.Models.Messages;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using Maila.Cocoa.Beans.Models.Messages;
 
 namespace Maila.Cocoa.Framework.Core
 {

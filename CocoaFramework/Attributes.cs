@@ -118,6 +118,10 @@ namespace Maila.Cocoa.Framework
         public string Text { get; }
         public bool IgnoreCase { get; set; } = true;
 
+        public AtRouteAttribute()
+        {
+            Text = string.Empty;
+        }
         public AtRouteAttribute(string text)
         {
             Text = text;

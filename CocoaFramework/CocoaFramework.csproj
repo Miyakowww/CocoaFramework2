@@ -4,7 +4,7 @@
     <TargetFramework>net5.0</TargetFramework>
     <AssemblyName>Maila.Cocoa.Framework</AssemblyName>
     <Nullable>enable</Nullable>
-    <Version>2.1.4.2</Version>
+    <Version>2.1.4.3</Version>
     <Company>Maila</Company>
     <Authors>Miyakowww</Authors>
     <Product>Cocoa Framework</Product>

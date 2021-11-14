@@ -1,12 +1,12 @@
 ﻿// Copyright (c) Maila. All rights reserved.
 // Licensed under the GNU AGPLv3
 
-using Maila.Cocoa.Beans.Models.Messages;
-using Maila.Cocoa.Framework.Support;
 using System;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using Maila.Cocoa.Beans.Models.Messages;
+using Maila.Cocoa.Framework.Support;
 
 namespace Maila.Cocoa.Framework
 {

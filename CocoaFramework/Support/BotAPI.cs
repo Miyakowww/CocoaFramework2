@@ -1,13 +1,6 @@
 ﻿// Copyright (c) Maila. All rights reserved.
 // Licensed under the GNU AGPLv3
 
-using Maila.Cocoa.Beans.API;
-using Maila.Cocoa.Beans.Exceptions;
-using Maila.Cocoa.Beans.Models;
-using Maila.Cocoa.Beans.Models.Events;
-using Maila.Cocoa.Beans.Models.Files;
-using Maila.Cocoa.Beans.Models.Messages;
-using Maila.Cocoa.Framework.Core;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -15,6 +8,13 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using Maila.Cocoa.Beans.API;
+using Maila.Cocoa.Beans.Exceptions;
+using Maila.Cocoa.Beans.Models;
+using Maila.Cocoa.Beans.Models.Events;
+using Maila.Cocoa.Beans.Models.Files;
+using Maila.Cocoa.Beans.Models.Messages;
+using Maila.Cocoa.Framework.Core;
 
 namespace Maila.Cocoa.Framework.Support
 {
