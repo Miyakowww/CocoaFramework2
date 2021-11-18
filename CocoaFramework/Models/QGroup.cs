@@ -66,13 +66,13 @@ namespace Maila.Cocoa.Framework.Models
             => MuteAsync(qqId, duration);
 
         public Task MuteAsync(long qqId, int duration)
-            => BotAPI.Mute(Id, qqId, duration > 259199 ? 259199 : duration < 0 ? 0 : duration);
+            => BotAPI.Mute(Id, qqId, Math.Clamp(duration, 0, 2591999));
 
         public void Mute(long qqId, TimeSpan duration)
             => MuteAsync(qqId, duration);
 
         public Task MuteAsync(long qqId, TimeSpan duration)
-            => BotAPI.Mute(Id, qqId, duration.TotalSeconds > 259199 ? 259199 : duration.TotalSeconds < 0 ? 0 : (int)duration.TotalSeconds);
+            => BotAPI.Mute(Id, qqId, Math.Clamp((int)duration.TotalSeconds, 0, 2591999));
 
         public void Unmute(long qqId)
             => UnmuteAsync(qqId);

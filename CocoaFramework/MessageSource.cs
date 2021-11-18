@@ -181,7 +181,7 @@ namespace Maila.Cocoa.Framework
 
         public Task MuteAsync(int duration)
             => IsGroup
-                ? BotAPI.Mute(Group!.Id, User.Id, duration)
+                ? Group!.MuteAsync(User.Id, duration)
                 : Task.CompletedTask;
 
         public void Mute(TimeSpan duration)
