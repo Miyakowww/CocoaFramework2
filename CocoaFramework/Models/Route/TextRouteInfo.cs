@@ -5,6 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Maila.Cocoa.Beans.Models.Messages;
+using Maila.Cocoa.Framework.Support;
 
 namespace Maila.Cocoa.Framework.Models.Route
 {
@@ -12,6 +14,7 @@ namespace Maila.Cocoa.Framework.Models.Route
     {
         private readonly string[] texts;
         private readonly bool[] ignoreCases;
+        private readonly bool[] atRequired;
         private readonly BotModuleBase module;
 
         private readonly int srcIndex;
@@ -19,11 +22,13 @@ namespace Maila.Cocoa.Framework.Models.Route
         private readonly int argCount;
         private readonly List<(int argIndex, int bindingType, string name, Type type)> autoDataIndex;
 
-        public TextRouteInfo(BotModuleBase module, MethodInfo route, string[] texts, bool[] ignoreCases, Func<MessageSource, bool> pred) : base(module, route, pred)
+
+        public TextRouteInfo(BotModuleBase module, MethodInfo route, string[] texts, bool[] ignoreCases, bool[] atRequired, Func<MessageSource, bool> pred) : base(module, route, pred)
         {
             this.texts = texts;
             this.ignoreCases = ignoreCases;
             this.module = module;
+            this.atRequired = atRequired;
 
             ParameterInfo[] parameters = route.GetParameters();
             argCount = parameters.Length;
@@ -75,10 +80,25 @@ namespace Maila.Cocoa.Framework.Models.Route
 
         protected override object?[]? Check(MessageSource src, QMessage msg)
         {
-            if (!texts.Where((t, i) => ignoreCases[i]
-                                       ? string.Equals(msg.PlainText, t, StringComparison.CurrentCultureIgnoreCase)
-                                       : msg.PlainText == t)
-                      .Any())
+            bool CheckCondition(string t, int i)
+            {
+                string tmpText = msg.PlainText;
+                if (atRequired[i])
+                {
+                    if (!msg.GetSubMessages<AtMessage>().Any(at => at.Target == BotAPI.BotQQ))
+                    {
+                        return false;
+                    }
+
+                    tmpText = tmpText.StartsWith(' ') ? tmpText[1..] : tmpText;
+                }
+
+                return ignoreCases[i]
+                           ? string.Equals(tmpText, t, StringComparison.CurrentCultureIgnoreCase)
+                           : tmpText == t;
+            }
+
+            if (!texts.Where(CheckCondition).Any())
             {
                 return null;
             }

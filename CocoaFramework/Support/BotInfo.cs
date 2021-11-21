@@ -98,6 +98,15 @@ namespace Maila.Cocoa.Framework.Support
             return groups?.GetValueOrDefault(groupId);
         }
 
+        public static QMemberInfo[]? GetMemberList(long groupId)
+        {
+            if (DateTime.Now - groupsLastSync > CredibleTime)
+            {
+                ReloadAllGroupMembers().Wait();
+            }
+            return members?.GetValueOrDefault(groupId)?.Select(p => p.Value).ToArray();
+        }
+
         public static QMemberInfo? GetMemberInfo(long groupId, long memberId)
         {
             if (DateTime.Now - groupsLastSync > CredibleTime)

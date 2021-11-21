@@ -88,6 +88,7 @@ namespace Maila.Cocoa.Framework
     public sealed class RegexRouteAttribute : Attribute
     {
         public Regex Regex { get; }
+        public bool AtRequired { get; set; } = false;
 
         public RegexRouteAttribute(string pattern)
         {
@@ -105,24 +106,9 @@ namespace Maila.Cocoa.Framework
     {
         public string Text { get; }
         public bool IgnoreCase { get; set; } = true;
+        public bool AtRequired { get; set; } = false;
 
         public TextRouteAttribute(string text)
-        {
-            Text = text;
-        }
-    }
-
-    [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
-    public sealed class AtRouteAttribute : Attribute
-    {
-        public string Text { get; }
-        public bool IgnoreCase { get; set; } = true;
-
-        public AtRouteAttribute()
-        {
-            Text = string.Empty;
-        }
-        public AtRouteAttribute(string text)
         {
             Text = text;
         }

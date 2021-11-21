@@ -50,13 +50,6 @@
 
 <br>
 
-## AtRouteAttribute
-指示当前方法可被艾特路由。  
-可指定于：`字段`  
-可多次指定 
-
-<br>
-
 ## RegexRouteAttribute
 指示当前方法可被正则路由。  
 可指定于：`字段`  

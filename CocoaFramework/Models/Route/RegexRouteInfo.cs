@@ -6,12 +6,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using Maila.Cocoa.Beans.Models.Messages;
+using Maila.Cocoa.Framework.Support;
 
 namespace Maila.Cocoa.Framework.Models.Route
 {
     internal class RegexRouteInfo : RouteInfo
     {
         private readonly Regex[] regexs;
+        private readonly bool[] atRequired;
         private readonly BotModuleBase module;
 
         private readonly int srcIndex;
@@ -39,10 +42,11 @@ namespace Maila.Cocoa.Framework.Models.Route
             return -1;
         }
 
-        public RegexRouteInfo(BotModuleBase module, MethodInfo route, Regex[] regexs, Func<MessageSource, bool> pred) : base(module, route, pred)
+        public RegexRouteInfo(BotModuleBase module, MethodInfo route, Regex[] regexs, bool[] atRequired, Func<MessageSource, bool> pred) : base(module, route, pred)
         {
             this.regexs = regexs;
             this.module = module;
+            this.atRequired = atRequired;
 
             ParameterInfo[] parameters = route.GetParameters();
             argCount = parameters.Length;
@@ -128,9 +132,28 @@ namespace Maila.Cocoa.Framework.Models.Route
 
         protected override object?[]? Check(MessageSource src, QMessage msg)
         {
+            (Match match, int index)? CheckCondition(Regex r, int i)
+            {
+                string tmpText = msg.PlainText;
+                if (atRequired[i])
+                {
+                    if (!msg.GetSubMessages<AtMessage>().Any(at => at.Target == BotAPI.BotQQ))
+                    {
+                        return null;
+                    }
+
+                    tmpText = tmpText.StartsWith(' ') ? tmpText[1..] : tmpText;
+                }
+
+                Match match = r.Match(tmpText);
+                return match.Success ? (match, i) : null;
+            }
+
             (Match match, var index) = regexs
-                .Select((r, i) => (match: r.Match(msg.PlainText), index: argsIndex[i]))
-                .FirstOrDefault(t => t.match.Success);
+                .Select(CheckCondition)
+                .Where(t => t is not null)
+                .Select(t => (t!.Value.match, argsIndex[t.Value.index]))
+                .FirstOrDefault();
 
             if (match is null || index is null)
             {

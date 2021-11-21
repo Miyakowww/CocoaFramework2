@@ -14,9 +14,35 @@ namespace Maila.Cocoa.Framework.Models
     {
         public long Id { get; }
 
+        private GroupConfig? config;
+        public string? Name { get => config?.Name; set => SetGroupConfig(new() { Name = value }); }
+        public string? Announcement { get => config?.Announcement; set => SetGroupConfig(new() { Announcement = value }); }
+        public bool? ConfessTalk { get => config?.ConfessTalk; set => SetGroupConfig(new() { ConfessTalk = value }); }
+        public bool? AllowMemberInvite { get => config?.AllowMemberInvite; set => SetGroupConfig(new() { AllowMemberInvite = value }); }
+        public bool? AutoApprove { get => config?.AutoApprove; set => SetGroupConfig(new() { AutoApprove = value }); }
+        public bool? AnonymousChat { get => config?.AnonymousChat; set => SetGroupConfig(new() { AnonymousChat = value }); }
+
+        private async void SetGroupConfig(GroupConfig config)
+        {
+            try
+            {
+                await BotAPI.SetGroupConfig(Id, config);
+                config = await BotAPI.GetGroupConfig(Id);
+            }
+            catch (Exception e) { Console.WriteLine(e); }
+        }
+
         public QGroup(long id)
         {
             Id = id;
+            Task.Run(async () =>
+            {
+                try
+                {
+                    config = await BotAPI.GetGroupConfig(id);
+                }
+                catch (Exception) { }
+            });
         }
 
         public override bool Equals(object? obj)
@@ -58,6 +84,9 @@ namespace Maila.Cocoa.Framework.Models
 
         public QGroupInfo? GetGroupInfo()
             => BotInfo.GetGroupInfo(Id);
+
+        public QMemberInfo[]? GetMemberList()
+            => BotInfo.GetMemberList(Id);
 
         public QMemberInfo? GetMemberInfo(long qqId)
             => BotInfo.GetMemberInfo(Id, qqId);

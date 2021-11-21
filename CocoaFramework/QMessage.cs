@@ -4,7 +4,9 @@
 using System;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Threading.Tasks;
 using Maila.Cocoa.Beans.Models.Messages;
+using Maila.Cocoa.Framework.Support;
 
 namespace Maila.Cocoa.Framework
 {
@@ -37,5 +39,17 @@ namespace Maila.Cocoa.Framework
 
         public static implicit operator string(QMessage msg)
             => msg.PlainText;
+
+        public void Recall()
+            => RecallAsync();
+
+        public Task RecallAsync()
+            => BotAPI.Recall(Id);
+
+        public void SetEssence()
+            => SetEssenceAsync();
+
+        public Task SetEssenceAsync()
+            => BotAPI.SetEssence(Id);
     }
 }

@@ -58,7 +58,7 @@ public class Hello : BotModuleBase
     [TextRoute("hello cocoa")] // 收到“hello cocoa”时调用此方法
     public static void Run(MessageSource src)
     {
-        src.Send("Hi!"); // 向来源发送“Hi!”
+        src.Send("Hi!"); // 向消息来源发送“Hi!”
     }
 }
 ```

@@ -8,8 +8,6 @@
 特性用于标记入口，需添加于入口方法前
 - TextRouteAttribute
     > 文本路由，如消息与提供的文本一致，则进行调用
-- AtRouteAttribute
-    > 艾特路由，如消息与提供的文本一致，并艾特了 Bot，则进行调用
 - RegexRouteAttribute
     > 正则路由，如消息符合正则表达式，则进行调用，并自动将匹配到的组填充到同名参数中
 - GroupNameAttribute
@@ -23,8 +21,8 @@
   - 参数可以任意填写，除下述情况的参数都将被传入默认值或 null
   - 第一个类型为 MessageSource 的参数将被传入消息的来源
   - 第一个类型为 QMessage 的参数将被传入消息的内容
-  - 参数名为正则表达式中的组名且类型为 string 的参数将被传入该组匹配到的字符串，如果该组会进行多次匹配（如 (?\<name>abc)+）则会传入匹配到的最后一个字符串。在 TextRoute 和 AtRoute 中无效
-  - 参数名为正则表达式中的组名且类型为 string[] 或 List\<string> 的参数将被传入该组匹配到的全部字符串。在 TextRoute 和 AtRoute 中无效
+  - 参数名为正则表达式中的组名且类型为 string 的参数将被传入该组匹配到的字符串，如果该组会进行多次匹配（如 (?\<name>abc)+）则会传入匹配到的最后一个字符串。在 TextRoute 中无效
+  - 参数名为正则表达式中的组名且类型为 string[] 或 List\<string> 的参数将被传入该组匹配到的全部字符串。在 TextRoute 中无效
   - 类型为 UserAutoData、GroupAutoData、SourceAutoData 的参数将根据消息来源提供对应的数据。详见 [AutoData](./AutoData.md)
 
 - 返回值

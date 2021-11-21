@@ -1,5 +1,18 @@
 <h1 align="center">更新日志</h1>
 
+# **2.1.5**
+*released November 21, 2021*
+
+## 变动
+- 移除 AtRoute
+
+## 新特性
+- RegexRoute 和 TextRoute 追加 AtRequired 属性，用于替代 AtRoute
+- QGroup 新增 GetMemberList 方法和群设置相关属性
+- QMessage 新增 Recall 和 SetEssence 方法
+
+<br>
+
 # **2.1.4.4**
 *released November 18, 2021*
 

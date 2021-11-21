@@ -139,17 +139,6 @@ namespace Maila.Cocoa.Framework
                     continue;
                 }
 
-                if (method.GetCustomAttributes<RegexRouteAttribute>().ToArray() is { Length: > 0 } regexRouteInfos)
-                {
-                    var rreqs = method.GetCustomAttributes<IdentityRequirementsAttribute>()
-                                      .Select<IdentityRequirementsAttribute, Func<MessageSource, bool>>(r => src => r.Check(src.User.Identity, src.Permission))
-                                      .ToList();
-                    Regex[] regexs = regexRouteInfos.Select(r => r.Regex).ToArray();
-                    routes.Add(new RegexRouteInfo(this, method, regexs, rreqs.Any()
-                                                                            ? src => rreqs.Any(p => p(src))
-                                                                            : src => true));
-                }
-
                 if (method.GetCustomAttributes<TextRouteAttribute>().ToArray() is { Length: > 0 } textRouteInfos)
                 {
                     var rreqs = method.GetCustomAttributes<IdentityRequirementsAttribute>()
@@ -157,21 +146,22 @@ namespace Maila.Cocoa.Framework
                                       .ToList();
                     string[] texts = textRouteInfos.Select(t => t.Text).ToArray();
                     bool[] ignoreCases = textRouteInfos.Select(t => t.IgnoreCase).ToArray();
-                    routes.Add(new TextRouteInfo(this, method, texts, ignoreCases, rreqs.Any()
-                                                                                       ? src => rreqs.Any(p => p(src))
-                                                                                       : src => true));
+                    bool[] atRequireds = textRouteInfos.Select(t => t.AtRequired).ToArray();
+                    routes.Add(new TextRouteInfo(this, method, texts, ignoreCases, atRequireds, rreqs.Any()
+                                                                                                    ? src => rreqs.Any(p => p(src))
+                                                                                                    : src => true));
                 }
 
-                if (method.GetCustomAttributes<AtRouteAttribute>().ToArray() is { Length: > 0 } atRouteInfos)
+                if (method.GetCustomAttributes<RegexRouteAttribute>().ToArray() is { Length: > 0 } regexRouteInfos)
                 {
                     var rreqs = method.GetCustomAttributes<IdentityRequirementsAttribute>()
                                       .Select<IdentityRequirementsAttribute, Func<MessageSource, bool>>(r => src => r.Check(src.User.Identity, src.Permission))
                                       .ToList();
-                    string[] texts = atRouteInfos.Select(t => t.Text).ToArray();
-                    bool[] ignoreCases = atRouteInfos.Select(t => t.IgnoreCase).ToArray();
-                    routes.Add(new AtRouteInfo(this, method, texts, ignoreCases, rreqs.Any()
-                                                                                       ? src => rreqs.Any(p => p(src))
-                                                                                       : src => true));
+                    Regex[] regexs = regexRouteInfos.Select(r => r.Regex).ToArray();
+                    bool[] atRequireds = regexRouteInfos.Select(r => r.AtRequired).ToArray();
+                    routes.Add(new RegexRouteInfo(this, method, regexs, atRequireds, rreqs.Any()
+                                                                                         ? src => rreqs.Any(p => p(src))
+                                                                                         : src => true));
                 }
             }
 
