@@ -123,9 +123,9 @@ namespace Maila.Cocoa.Framework
                 DataManager.AddHosting(field, this, $"{DataRoot}Field_{field.Name}");
             }
 
-            DataManager.AddHosting(BaseType.GetField(nameof(userAutoData), BindingFlags.NonPublic | BindingFlags.Instance)!, this, $"{DataRoot}UserAutoData");
-            DataManager.AddHosting(BaseType.GetField(nameof(groupAutoData), BindingFlags.NonPublic | BindingFlags.Instance)!, this, $"{DataRoot}GroupAutoData");
-            DataManager.AddHosting(BaseType.GetField(nameof(sourceAutoData), BindingFlags.NonPublic | BindingFlags.Instance)!, this, $"{DataRoot}SourceAutoData");
+            DataManager.AddHosting(BaseType.GetField(nameof(userAutoData), BindingFlags.NonPublic | BindingFlags.Instance)!, this, $"{DataRoot}UserAutoData", true);
+            DataManager.AddHosting(BaseType.GetField(nameof(groupAutoData), BindingFlags.NonPublic | BindingFlags.Instance)!, this, $"{DataRoot}GroupAutoData", true);
+            DataManager.AddHosting(BaseType.GetField(nameof(sourceAutoData), BindingFlags.NonPublic | BindingFlags.Instance)!, this, $"{DataRoot}SourceAutoData", true);
 
             #endregion
 

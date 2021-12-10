@@ -80,16 +80,20 @@ namespace Maila.Cocoa.Framework.Support
             private readonly FieldInfo field;
             private readonly object? instance;
             private readonly string fileName;
+            private readonly bool optim;
             private readonly string filePath;
+            private readonly string folderPath;
             private string last = string.Empty;
             private DateTime lastSave = DateTime.MinValue;
 
-            public HostingInfo(FieldInfo field, object? instance, string fileName)
+            public HostingInfo(FieldInfo field, object? instance, string fileName, bool optim)
             {
                 this.field = field;
                 this.instance = instance;
+                this.optim = optim;
                 this.fileName = fileName;
                 filePath = $"{DataPath}{fileName}.json";
+                folderPath = Path.GetDirectoryName(filePath) ?? DataPath;
             }
 
             private int _lock;
@@ -100,11 +104,19 @@ namespace Maila.Cocoa.Framework.Support
                 {
                     return;
                 }
-                string now = JsonConvert.SerializeObject(field.GetValue(instance));
+
+                string current = JsonConvert.SerializeObject(field.GetValue(instance));
                 if (!File.Exists(filePath))
                 {
-                    SaveData(fileName, field.GetValue(instance));
-                    last = now;
+                    if (optim && current == "{}")
+                    {
+                        Optimize();
+                    }
+                    else
+                    {
+                        SaveData(fileName, field.GetValue(instance));
+                    }
+                    last = current;
                 }
                 else if (File.GetLastWriteTimeUtc(filePath) > lastSave)
                 {
@@ -118,14 +130,33 @@ namespace Maila.Cocoa.Framework.Support
                         SaveData(fileName, field.GetValue(instance));
                     }
                 }
-                else if (last != now)
+                else if (optim && current == "{}")
+                {
+                    Optimize();
+                }
+                else if (current != last)
                 {
                     SaveData(fileName, field.GetValue(instance));
-                    last = now;
+                    last = current;
                 }
 
                 lastSave = DateTime.UtcNow;
                 _lock = 0;
+            }
+
+            private void Optimize()
+            {
+                if (File.Exists(filePath))
+                {
+                    File.Delete(filePath);
+                }
+
+                if (Directory.Exists(folderPath)
+                 && Directory.GetFiles(folderPath).Length == 0
+                 && Directory.GetDirectories(folderPath).Length == 0)
+                {
+                    Directory.Delete(folderPath);
+                }
             }
         }
 
@@ -133,9 +164,9 @@ namespace Maila.Cocoa.Framework.Support
         private static CancellationTokenSource? _hosting;
         private static bool stopHosting;
 
-        internal static void AddHosting(FieldInfo field, object? instance, string name)
+        internal static void AddHosting(FieldInfo field, object? instance, string name, bool optim = false)
         {
-            hostingInfos.Add(new(field, instance, name));
+            hostingInfos.Add(new(field, instance, name, optim));
         }
 
         internal static async Task SyncAll()

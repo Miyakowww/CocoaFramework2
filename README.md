@@ -23,7 +23,7 @@ Cocoa Framework 是一个基于 mirai 的 QQ 机器人开发框架，致力于�
 # 开始使用
 
 尝试快速入门教程：
-- [你好，Cocoa！](./Docs/Tutorial/hellococoa.md)
+- [你好，Cocoa！](./Docs/Tutorial/Hellococoa.md)
 
 查看常见功能的案例：
 - [复读机](./Docs/Samples/Repeater.md)

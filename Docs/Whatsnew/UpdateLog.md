@@ -1,5 +1,16 @@
 <h1 align="center">更新日志</h1>
 
+# **2.1.5.1**
+*released December 10, 2021*
+
+## 变动
+- 优化数据存储逻辑，不包含实际数据的文件将被自动移除，以优化 data 文件夹的空间占用
+
+## 新特性
+- BotInfo 新增 GetGroupList 和 GetFriendList 方法，用于获取群列表和好友列表
+
+<br>
+
 # **2.1.5**
 *released November 21, 2021*
 

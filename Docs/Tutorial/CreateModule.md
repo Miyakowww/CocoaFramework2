@@ -36,4 +36,5 @@ public class Demo : BotModuleBase
 
 <br>
 
-至此，一个没有功能但会被加载的 Module 创建完成。
+至此，一个不包含功能但会被正常加载的 Module 创建完成。  
+下一篇：[使用路由](./Route.md)

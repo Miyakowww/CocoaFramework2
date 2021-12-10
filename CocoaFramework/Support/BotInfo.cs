@@ -89,6 +89,15 @@ namespace Maila.Cocoa.Framework.Support
             return groups?.ContainsKey(groupId) ?? false;
         }
 
+        public static QGroupInfo[]? GetGroupList()
+        {
+            if (DateTime.Now - groupsLastSync > CredibleTime)
+            {
+                ReloadAllGroupMembers().Wait();
+            }
+            return groups?.Values.ToArray();
+        }
+
         public static QGroupInfo? GetGroupInfo(long groupId)
         {
             if (DateTime.Now - groupsLastSync > CredibleTime)
@@ -123,6 +132,15 @@ namespace Maila.Cocoa.Framework.Support
                 ReloadFriends().Wait();
             }
             return friends?.ContainsKey(qqId) ?? false;
+        }
+
+        public static QFriendInfo[]? GetFriendList()
+        {
+            if (DateTime.Now - friendsLastSync > CredibleTime)
+            {
+                ReloadFriends().Wait();
+            }
+            return friends?.Values.ToArray();
         }
 
         public static QFriendInfo? GetFriendInfo(long qqId)
