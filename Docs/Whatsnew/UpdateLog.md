@@ -1,5 +1,13 @@
 <h1 align="center">更新日志</h1>
 
+# **2.1.5.2**
+*released December 28, 2021*
+
+## 修复
+- Fixed a bug that might take up a lot of disk IO.（问就是不会说中文了
+
+<br>
+
 # **2.1.5.1**
 *released December 10, 2021*
 

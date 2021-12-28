@@ -179,10 +179,17 @@ namespace Maila.Cocoa.Framework.Support
 
         internal static async void StartHosting(TimeSpan delay)
         {
+            if (delay.TotalSeconds < 1)
+            {
+                await SyncAll();
+                return;
+            }
+
             if (Interlocked.CompareExchange(ref _hosting, new(), null) is not null)
             {
                 throw new("Duplicated Calling");
             }
+
             while (!stopHosting)
             {
                 await SyncAll();
@@ -190,7 +197,13 @@ namespace Maila.Cocoa.Framework.Support
                 {
                     await Task.Delay(delay, _hosting.Token);
                 }
-                catch (TaskCanceledException) { }
+                catch (TaskCanceledException)
+                {
+                    if (!stopHosting)
+                    {
+                        _hosting = new();
+                    }
+                }
             }
 
             stopHosting = false;
@@ -200,6 +213,7 @@ namespace Maila.Cocoa.Framework.Support
         {
             if (_hosting is null)
             {
+                await SyncAll();
                 return;
             }
             stopHosting = true;
