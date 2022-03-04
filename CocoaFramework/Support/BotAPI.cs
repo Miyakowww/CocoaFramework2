@@ -86,25 +86,32 @@ namespace Maila.Cocoa.Framework.Support
 
         #region === Events ===
 
+        private static readonly object _setEventLock = new();
         private static void SetBotEvent<T>(Action? val) where T : BotEvent
         {
             Type type = typeof(T);
             if (val is null)
             {
-                if (eventListeners.ContainsKey(type))
+                lock (_setEventLock)
                 {
-                    eventListeners.Remove(type);
+                    if (eventListeners.ContainsKey(type))
+                    {
+                        eventListeners.Remove(type);
+                    }
                 }
             }
             else
             {
-                eventListeners[type] = (e) =>
+                lock (_setEventLock)
                 {
-                    if (((T)e).QQ == BotCore.BindingQQ)
+                    eventListeners[type] = (e) =>
                     {
-                        val.Invoke();
-                    }
-                };
+                        if (((T)e).QQ == BotCore.BindingQQ)
+                        {
+                            val.Invoke();
+                        }
+                    };
+                }
             }
         }
         private static void SetEvent<T>(Action<T>? val) where T : Event
@@ -112,14 +119,20 @@ namespace Maila.Cocoa.Framework.Support
             Type type = typeof(T);
             if (val is null)
             {
-                if (eventListeners.ContainsKey(type))
+                lock (_setEventLock)
                 {
-                    eventListeners.Remove(type);
+                    if (eventListeners.ContainsKey(type))
+                    {
+                        eventListeners.Remove(type);
+                    }
                 }
             }
             else
             {
-                eventListeners[type] = e => val.Invoke((T)e);
+                lock (_setEventLock)
+                {
+                    eventListeners[type] = e => val.Invoke((T)e);
+                }
             }
         }
 

@@ -4,7 +4,7 @@
     <TargetFramework>net5.0</TargetFramework>
     <AssemblyName>Maila.Cocoa.Framework</AssemblyName>
     <Nullable>enable</Nullable>
-    <Version>2.1.5.2</Version>
+    <Version>2.1.5.3</Version>
     <Company>Maila</Company>
     <Authors>Miyakowww</Authors>
     <Product>Cocoa Framework</Product>
@@ -33,7 +33,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Maila.Cocoa.Beans" Version="1.1.6" />
+    <PackageReference Include="Maila.Cocoa.Beans" Version="1.1.7" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
   </ItemGroup>
 	
