@@ -66,3 +66,8 @@
 ## MemoryOnlyAttribute
 指示当前 AutoData 参数为临时自动数据，仅存储于内存中  
 可指定于：`参数` 
+
+<br>
+
+## SharedFromAttribute
+指示当前 AutoData 将共享来自另一 Module 的数据

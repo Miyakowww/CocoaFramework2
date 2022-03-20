@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Maila.Cocoa.Beans.Models.Messages;
+using Maila.Cocoa.Framework.Core;
 using Maila.Cocoa.Framework.Support;
 
 namespace Maila.Cocoa.Framework.Models.Route
@@ -20,8 +21,27 @@ namespace Maila.Cocoa.Framework.Models.Route
         private readonly int srcIndex;
         private readonly int msgIndex;
         private readonly int argCount;
-        private readonly List<(int argIndex, int bindingType, string name, Type type)> autoDataIndex;
+        private readonly List<AutoDataIndex> autoDataIndices;
 
+        private class AutoDataIndex
+        {
+            public int argIndex;
+            public int bindingType;
+            public string name;
+            public Type type;
+            public BotModuleBase? sourceModule;
+            public Type? sourceModuleType;
+
+            public AutoDataIndex(int argIndex, int bindingType, string name, Type type, BotModuleBase? sourceModule, Type? sourceModuleType)
+            {
+                this.argIndex = argIndex;
+                this.bindingType = bindingType;
+                this.name = name;
+                this.type = type;
+                this.sourceModule = sourceModule;
+                this.sourceModuleType = sourceModuleType;
+            }
+        }
 
         public TextRouteInfo(BotModuleBase module, MethodInfo route, string[] texts, bool[] ignoreCases, bool[] atRequired, Func<MessageSource, bool> pred) : base(module, route, pred)
         {
@@ -32,7 +52,7 @@ namespace Maila.Cocoa.Framework.Models.Route
 
             ParameterInfo[] parameters = route.GetParameters();
             argCount = parameters.Length;
-            autoDataIndex = new();
+            autoDataIndices = new();
             srcIndex = -1;
             msgIndex = -1;
 
@@ -55,24 +75,47 @@ namespace Maila.Cocoa.Framework.Models.Route
                 }
                 else if (paraType.IsGenericType)
                 {
+                    BotModuleBase? sourceModule = module;
+                    Type? sourceModuleType = null;
+                    if (para.GetCustomAttribute<SharedFromAttribute>() is SharedFromAttribute sharedFrom)
+                    {
+                        sourceModule = null;
+                        sourceModuleType = sharedFrom.Type;
+                    }
+
                     Type typeDefinition = paraType.GetGenericTypeDefinition();
                     if (typeDefinition == UserAutoDataType)
                     {
-                        autoDataIndex.Add((i, 0 + (para.GetCustomAttribute<MemoryOnlyAttribute>() is null ? 0 : 3),
-                                           $"{para.Name} {paraType.GenericTypeArguments[0].FullName!.CalculateCRC16():X}",
-                                           paraType.GenericTypeArguments[0]));
+                        autoDataIndices.Add(new AutoDataIndex(
+                            i,
+                            0 + (para.GetCustomAttribute<MemoryOnlyAttribute>() is null ? 0 : 3),
+                            $"{para.Name} {paraType.GenericTypeArguments[0].FullName!.CalculateCRC16():X}",
+                            paraType.GenericTypeArguments[0],
+                            sourceModule,
+                            sourceModuleType
+                        ));
                     }
                     else if (typeDefinition == GroupAutoDataType)
                     {
-                        autoDataIndex.Add((i, 1 + (para.GetCustomAttribute<MemoryOnlyAttribute>() is null ? 0 : 3),
-                                           $"{para.Name} {paraType.GenericTypeArguments[0].FullName!.CalculateCRC16():X}",
-                                           paraType.GenericTypeArguments[0]));
+                        autoDataIndices.Add(new AutoDataIndex(
+                            i,
+                            1 + (para.GetCustomAttribute<MemoryOnlyAttribute>() is null ? 0 : 3),
+                            $"{para.Name} {paraType.GenericTypeArguments[0].FullName!.CalculateCRC16():X}",
+                            paraType.GenericTypeArguments[0],
+                            sourceModule,
+                            sourceModuleType
+                        ));
                     }
                     else if (typeDefinition == SourceAutoDataType)
                     {
-                        autoDataIndex.Add((i, 2 + (para.GetCustomAttribute<MemoryOnlyAttribute>() is null ? 0 : 3),
-                                           $"{para.Name} {paraType.GenericTypeArguments[0].FullName!.CalculateCRC16():X}",
-                                           paraType.GenericTypeArguments[0]));
+                        autoDataIndices.Add(new AutoDataIndex(
+                            i,
+                            2 + (para.GetCustomAttribute<MemoryOnlyAttribute>() is null ? 0 : 3),
+                            $"{para.Name} {paraType.GenericTypeArguments[0].FullName!.CalculateCRC16():X}",
+                            paraType.GenericTypeArguments[0],
+                            sourceModule,
+                            sourceModuleType
+                        ));
                     }
                 }
             }
@@ -112,16 +155,21 @@ namespace Maila.Cocoa.Framework.Models.Route
             {
                 args[msgIndex] = msg;
             }
-            foreach ((int argIndex, int bindingType, string name, Type type) in autoDataIndex)
+            foreach (var autoDataIndex in autoDataIndices)
             {
-                args[argIndex] = bindingType switch
+                if (autoDataIndex.sourceModule == null)
                 {
-                    0 => module.GetUserAutoData(src, name, type),
-                    1 => module.GetGroupAutoData(src, name, type),
-                    2 => module.GetSourceAutoData(src, name, type),
-                    3 => module.GetUserTempData(src, name, type),
-                    4 => module.GetGroupTempData(src, name, type),
-                    5 => module.GetSourceTempData(src, name, type),
+                    autoDataIndex.sourceModule = ModuleCore.Modules.FirstOrDefault(m => m.GetType() == autoDataIndex.sourceModuleType) ?? module;
+                }
+
+                args[autoDataIndex.argIndex] = autoDataIndex.bindingType switch
+                {
+                    0 => autoDataIndex.sourceModule.GetUserAutoData(src, autoDataIndex.name, autoDataIndex.type),
+                    1 => autoDataIndex.sourceModule.GetGroupAutoData(src, autoDataIndex.name, autoDataIndex.type),
+                    2 => autoDataIndex.sourceModule.GetSourceAutoData(src, autoDataIndex.name, autoDataIndex.type),
+                    3 => autoDataIndex.sourceModule.GetUserTempData(src, autoDataIndex.name, autoDataIndex.type),
+                    4 => autoDataIndex.sourceModule.GetGroupTempData(src, autoDataIndex.name, autoDataIndex.type),
+                    5 => autoDataIndex.sourceModule.GetSourceTempData(src, autoDataIndex.name, autoDataIndex.type),
                     _ => null
                 };
             }

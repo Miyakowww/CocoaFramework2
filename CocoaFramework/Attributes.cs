@@ -130,5 +130,16 @@ namespace Maila.Cocoa.Framework
     [AttributeUsage(AttributeTargets.Parameter)]
     public sealed class MemoryOnlyAttribute : Attribute { }
 
+    [AttributeUsage(AttributeTargets.Parameter)]
+    public sealed class SharedFromAttribute : Attribute
+    {
+        public Type Type { get; }
+
+        public SharedFromAttribute(Type type)
+        {
+            Type = type;
+        }
+    }
+
     #endregion
 }

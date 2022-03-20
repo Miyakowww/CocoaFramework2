@@ -1,5 +1,13 @@
 <h1 align="center">更新日志</h1>
 
+# **2.1.5.4**
+*released March 20, 2022*
+
+## 新特性
+- AutoData 新增 SharedFrom 特性，用于在 Module 间共享数据
+
+<br>
+
 # **2.1.5.3**
 *released March 4, 2022*
 
