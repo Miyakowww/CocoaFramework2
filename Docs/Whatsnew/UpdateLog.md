@@ -1,5 +1,13 @@
 <h1 align="center">更新日志</h1>
 
+# **2.1.5.5**
+*released March 22, 2022*
+
+## 修复
+- 修复使用新版 mirai 时无法接收 NudgeEvent 的问题
+
+<br>
+
 # **2.1.5.4**
 *released March 20, 2022*
 
