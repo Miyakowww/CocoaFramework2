@@ -28,5 +28,6 @@
 - [路由](./Manual/Route.md)
 - [AutoData](./Manual/AutoData.md)
 - [Meeting](./Manual/Meeting.md)
+- [BotEventHandler](./Manual/BotEventHandler.md)
 - [数据存储](./Manual/Data.md)
 - [权限管理](./Manual/Permission.md)

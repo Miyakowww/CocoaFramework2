@@ -13,13 +13,21 @@ namespace Maila.Cocoa.Framework
     {
         public static bool Connected => BotCore.Connected;
 
-        /// <summary>Connect to the server.</summary>
+        [Obsolete("Use ConnectAndInit instead.")]
         public static Task<bool> Connect(BotStartupConfig config)
             => BotCore.Connect(config);
 
-        /// <summary>Disconnect and release related resources.</summary>
+        [Obsolete("Use DisconnectAndSaveData instead.")]
         public static Task Disconnect()
             => BotCore.Disconnect();
+
+        /// <summary>Connect to the server.</summary>
+        public static Task<bool> ConnectAndInit(BotStartupConfig config)
+            => BotCore.ConnectAndInit(config);
+
+        /// <summary>Disconnect and release related resources.</summary>
+        public static Task DisconnectAndSaveData()
+            => BotCore.DisconnectAndSaveData();
 
         /// <summary>Release current session and connect to a new session.</summary>
         public static Task Reconnect()
@@ -35,6 +43,7 @@ namespace Maila.Cocoa.Framework
 
         internal List<Type> Middlewares { get; } = new();
         public List<Assembly> Assemblies { get; } = new();
+        public List<BotEventHandlerBase> EventHandlers { get; } = new();
         public TimeSpan autoSave;
 
         public BotStartupConfig(string verifyKey, long qqId, string host) : this(verifyKey, qqId, host, 80) { }
@@ -67,6 +76,12 @@ namespace Maila.Cocoa.Framework
         public BotStartupConfig AddAssembly(Assembly assem)
         {
             Assemblies.Add(assem);
+            return this;
+        }
+
+        public BotStartupConfig AddEventHandler(BotEventHandlerBase handler)
+        {
+            EventHandlers.Add(handler);
             return this;
         }
     }

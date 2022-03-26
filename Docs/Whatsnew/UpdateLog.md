@@ -1,5 +1,17 @@
 <h1 align="center">更新日志</h1>
 
+# **2.1.6**
+*released March 26, 2022*
+
+## 变更
+- 重命名及拆分部分方法
+- 移除 BotAPI 中用于事件绑定的属性
+
+## 新特性
+- 新增 BotEventHandler，用于处理事件
+
+<br>
+
 # **2.1.5.5**
 *released March 22, 2022*
 

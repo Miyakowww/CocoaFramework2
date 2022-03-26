@@ -23,163 +23,91 @@ namespace Maila.Cocoa.Framework.Support
         public static long? BotQQ => BotCore.BindingQQ;
         public static string? SessionKey => BotCore.SessionKey;
 
-        private static readonly Dictionary<Type, Action<Event>> eventListeners = new();
+        private static List<BotEventHandlerBase> eventHandlers = new();
+        private static readonly FrameworkEventHandler frameworkEventHandler = new();
 
         private static CancellationTokenSource? source;
 
-        static BotAPI()
-        {
-            eventListeners[typeof(FriendMessageEvent)] = e =>
-            {
-                var fm = (FriendMessageEvent)e;
-                BotCore.OnMessage(new(fm.Sender.Id), new(fm.MessageChain.ToArray()));
-            };
-
-            eventListeners[typeof(GroupMessageEvent)] = e =>
-            {
-                var gm = (GroupMessageEvent)e;
-                BotCore.OnMessage(new(gm.Sender.Group.Id, gm.Sender.Id, gm.Sender.Permission, gm.Sender.MemberName), new(gm.MessageChain.ToArray()));
-            };
-
-            eventListeners[typeof(TempMessageEvent)] = e =>
-            {
-                var tm = (TempMessageEvent)e;
-                BotCore.OnMessage(new(tm.Sender.Group.Id, tm.Sender.Id, null, null), new(tm.MessageChain.ToArray()));
-            };
-        }
-
-        internal static async void Init()
+        internal static void Init(IEnumerable<BotEventHandlerBase> handlers)
         {
             if (!BotCore.Connected)
             {
                 return;
             }
 
-            source = new();
-            string? ver = BotCore.host is null ? null : await MiraiAPI.About(BotCore.host);
-            if (ver is null)
-            {
-                _ = BotCore.Disconnect();
-                return;
-            }
+            eventHandlers = handlers.ToList();
 
-            if (ver.StartsWith('2'))
-            {
-                MiraiAPI.ListenAllEvent(BotCore.host!, BotCore.SessionKey!, BotCore.verifyKey, BotCore.BindingQQ!.Value,
-                        e => eventListeners.GetValueOrDefault(e.GetType())?.Invoke(e),
-                        Init, source.Token);
-            }
-            else
-            {
-                MiraiAPI.ListenAllEventv1(BotCore.host!, BotCore.SessionKey!,
-                        e => eventListeners.GetValueOrDefault(e.GetType())?.Invoke(e),
-                        Init, source.Token);
-            }
+            ListenAllEvents();
         }
 
         internal static void Reset()
         {
             source?.Cancel();
             source = null;
-            OnDisconnect?.Invoke();
+            OnDisconnect();
         }
 
-        #region === Events ===
-
-        private static readonly object _setEventLock = new();
-        private static void SetBotEvent<T>(Action? val) where T : BotEvent
+        private static async void ListenAllEvents()
         {
-            Type type = typeof(T);
-            if (val is null)
+            if (!BotCore.Connected)
             {
-                lock (_setEventLock)
-                {
-                    if (eventListeners.ContainsKey(type))
-                    {
-                        eventListeners.Remove(type);
-                    }
-                }
+                return;
+            }
+
+            source?.Cancel();
+            source = new();
+            string? ver = BotCore.host is null ? null : await MiraiAPI.About(BotCore.host);
+            if (ver is null)
+            {
+                _ = BotCore.DisconnectAndSaveData();
+                return;
+            }
+
+            if (ver.StartsWith('2'))
+            {
+                MiraiAPI.ListenAllEvent(
+                    BotCore.host!, BotCore.SessionKey!, BotCore.verifyKey, BotCore.BindingQQ!.Value,
+                    HandleEvent,
+                    ListenAllEvents, source.Token);
             }
             else
             {
-                lock (_setEventLock)
-                {
-                    eventListeners[type] = (e) =>
-                    {
-                        if (((T)e).QQ == BotCore.BindingQQ)
-                        {
-                            val.Invoke();
-                        }
-                    };
-                }
+                MiraiAPI.ListenAllEventv1(
+                    BotCore.host!, BotCore.SessionKey!,
+                    HandleEvent,
+                    ListenAllEvents, source.Token);
             }
         }
-        private static void SetEvent<T>(Action<T>? val) where T : Event
+
+        private static void HandleEvent(Event evt)
         {
-            Type type = typeof(T);
-            if (val is null)
+            if (evt is BotEvent be && be.QQ != BotCore.BindingQQ)
             {
-                lock (_setEventLock)
-                {
-                    if (eventListeners.ContainsKey(type))
-                    {
-                        eventListeners.Remove(type);
-                    }
-                }
+                return;
             }
-            else
+
+            frameworkEventHandler.HandleEvent(evt);
+            foreach (var handler in eventHandlers)
             {
-                lock (_setEventLock)
-                {
-                    eventListeners[type] = e => val.Invoke((T)e);
-                }
+                handler.HandleEvent(evt);
             }
         }
 
-        public static Action? OnBotOnline { set => SetBotEvent<BotOnlineEvent>(value); }
-        public static Action? OnBotOfflineActive { set => SetBotEvent<BotOfflineEventActive>(value); }
-        public static Action? OnBotOfflineForce { set => SetBotEvent<BotOfflineEventForce>(value); }
-        public static Action? OnBotOfflineDropped { set => SetBotEvent<BotOfflineEventDropped>(value); }
-        public static Action? OnBotRelogin { set => SetBotEvent<BotReloginEvent>(value); }
-        public static Action<BotGroupPermissionChangeEvent>? OnBotGroupPermissionChange { set => SetEvent(value); }
-        public static Action<BotMuteEvent>? OnBotMute { set => SetEvent(value); }
-        public static Action<BotUnmuteEvent>? OnBotUnmute { set => SetEvent(value); }
-        public static Action<BotJoinGroupEvent>? OnBotJoinGroup { set => SetEvent(value); }
-        public static Action<BotLeaveEventActive>? OnBotLeaveActive { set => SetEvent(value); }
-        public static Action<BotLeaveEventKick>? OnBotLeaveKick { set => SetEvent(value); }
+        internal static void OnException(Exception e)
+        {
+            foreach (var handler in eventHandlers)
+            {
+                handler.OnException(e);
+            }
+        }
 
-        public static Action<FriendInputStatusChangedEvent>? OnFriendInputStatusChanged { set => SetEvent(value); }
-        public static Action<FriendNickChangedEvent>? OnFriendNickChanged { set => SetEvent(value); }
-
-        public static Action<GroupRecallEvent>? OnGroupRecall { set => SetEvent(value); }
-        public static Action<FriendRecallEvent>? OnFriendRecall { set => SetEvent(value); }
-
-        public static Action<GroupNameChangeEvent>? OnGroupNameChange { set => SetEvent(value); }
-        public static Action<GroupEntranceAnnouncementChangeEvent>? OnGroupEntranceAnnouncementChange { set => SetEvent(value); }
-        public static Action<GroupMuteAllEvent>? OnGroupMuteAll { set => SetEvent(value); }
-        public static Action<GroupAllowAnonymousChatEvent>? OnGroupAllowAnonymousChat { set => SetEvent(value); }
-        public static Action<GroupAllowConfessTalkEvent>? OnGroupAllowConfessTalk { set => SetEvent(value); }
-        public static Action<GroupAllowMemberInviteEvent>? OnGroupAllowMemberInvite { set => SetEvent(value); }
-        public static Action<MemberJoinEvent>? OnMemberJoin { set => SetEvent(value); }
-        public static Action<MemberLeaveEventKick>? OnMemberLeaveKick { set => SetEvent(value); }
-        public static Action<MemberLeaveEventQuit>? OnMemberLeaveQuit { set => SetEvent(value); }
-        public static Action<MemberCardChangeEvent>? OnMemberCardChange { set => SetEvent(value); }
-        public static Action<MemberSpecialTitleChangeEvent>? OnMemberSpecialTitleChange { set => SetEvent(value); }
-        public static Action<MemberPermissionChangeEvent>? OnMemberPermissionChange { set => SetEvent(value); }
-        public static Action<MemberMuteEvent>? OnMemberMute { set => SetEvent(value); }
-        public static Action<MemberUnmuteEvent>? OnMemberUnmute { set => SetEvent(value); }
-
-        public static Action<NewFriendRequestEvent>? OnNewFriendRequest { set => SetEvent(value); }
-        public static Action<MemberJoinRequestEvent>? OnMemberJoinRequest { set => SetEvent(value); }
-        public static Action<BotInvitedJoinGroupRequestEvent>? OnBotInvitedJoinGroupRequest { set => SetEvent(value); }
-
-        public static Action<NudgeEvent>? OnNudge { set => SetEvent(value); }
-
-        public static Action<Exception>? OnException { internal get; set; }
-
-        public static Action? OnDisconnect { private get; set; }
-
-        #endregion
+        internal static void OnDisconnect()
+        {
+            foreach (var handler in eventHandlers)
+            {
+                handler.OnDisconnect();
+            }
+        }
 
         #region === Essence API ===
 
@@ -755,5 +683,68 @@ namespace Maila.Cocoa.Framework.Support
         }
 
         #endregion
+    }
+
+    internal class FrameworkEventHandler : BotEventHandlerBase
+    {
+        public static void OnFriendMessage(FriendMessageEvent evt)
+        {
+            BotCore.OnMessage(new(evt.Sender.Id), new(evt.MessageChain.ToArray()));
+        }
+
+        public static void OnGroupMessage(GroupMessageEvent evt)
+        {
+            BotCore.OnMessage(new(evt.Sender.Group.Id, evt.Sender.Id, evt.Sender.Permission, evt.Sender.MemberName), new(evt.MessageChain.ToArray()));
+        }
+
+        public static void OnTempMessage(TempMessageEvent evt)
+        {
+            BotCore.OnMessage(new(evt.Sender.Group.Id, evt.Sender.Id, null, null), new(evt.MessageChain.ToArray()));
+        }
+
+        public static void OnBotJoinGroup(BotJoinGroupEvent evt)
+        {
+            _ = BotInfo.ReloadGroupMembers(evt.Group.Id);
+        }
+
+        public static void OnBotGroupPermissionChange(BotGroupPermissionChangeEvent evt)
+        {
+            _ = BotInfo.ReloadGroupMembers(evt.Group.Id);
+        }
+
+        public static void OnFriendNickChanged(FriendNickChangedEvent evt)
+        {
+            BotInfo.UpdateFriend(evt.Friend);
+        }
+
+        public static void OnGroupNameChange(GroupNameChangeEvent evt)
+        {
+            _ = BotInfo.ReloadGroupMembers(evt.Group.Id);
+        }
+
+        public static void OnMemberJoin(MemberJoinEvent evt)
+        {
+            BotInfo.UpdateMember(evt.Member);
+        }
+
+        public static void OnMemberLeaveKick(MemberLeaveEventKick evt)
+        {
+            BotInfo.UpdateMember(evt.Member);
+        }
+
+        public static void OnMemberLeaveQuit(MemberLeaveEventQuit evt)
+        {
+            BotInfo.UpdateMember(evt.Member);
+        }
+
+        public static void OnMemberCardChange(MemberCardChangeEvent evt)
+        {
+            BotInfo.UpdateMember(evt.Member);
+        }
+
+        public static void OnMemberPermissionChange(MemberPermissionChangeEvent evt)
+        {
+            BotInfo.UpdateMember(evt.Member);
+        }
     }
 }

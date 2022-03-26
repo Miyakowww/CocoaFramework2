@@ -77,17 +77,21 @@ namespace Maila.Cocoa.Framework
                 : BotAPI.SendPrivateMessage(User.Id, chain);
 
 
+        [Obsolete("Use SendWithAt instead.")]
         public int SendEx(bool addAtWhenGroup, string? groupDelimiter, string message)
             => SendExAsync(addAtWhenGroup, groupDelimiter, message).Result;
 
+        [Obsolete("Use SendWithAt instead.")]
         public int SendEx(bool addAtWhenGroup, string? groupDelimiter, params IMessage[] chain)
             => SendExAsync(addAtWhenGroup, groupDelimiter, chain).Result;
 
+        [Obsolete("Use SendWithAtAsync instead.")]
         public Task<int> SendExAsync(bool addAtWhenGroup, string? groupDelimiter, string message)
         {
             return SendExAsync(addAtWhenGroup, groupDelimiter, new PlainMessage(message));
         }
 
+        [Obsolete("Use SendWithAtAsync instead.")]
         public Task<int> SendExAsync(bool addAtWhenGroup, string? groupDelimiter, params IMessage[] chain)
         {
             if (!IsGroup)
@@ -108,12 +112,44 @@ namespace Maila.Cocoa.Framework
         }
 
 
+        public int SendWithAt(string message)
+            => SendWithAtAsync(message).Result;
+
+        public int SendWithAt(params IMessage[] chain)
+            => SendWithAtAsync(chain).Result;
+
+        public Task<int> SendWithAtAsync(string message)
+        {
+            return SendWithAtAsync(new PlainMessage(message));
+        }
+
+        public Task<int> SendWithAtAsync(params IMessage[] chain)
+        {
+            if (!IsGroup)
+            {
+                return BotAPI.SendPrivateMessage(User.Id, chain);
+            }
+
+            List<IMessage> newChain = new(chain.Length + 2)
+            {
+                new AtMessage(User.Id),
+                new PlainMessage(" ")
+            };
+            newChain.AddRange(chain);
+
+            return BotAPI.SendGroupMessage(Group!.Id, newChain.ToArray());
+        }
+
+
+        [Obsolete("Use SendReply instead.")]
         public int SendReplyEx(QMessage quote, bool addAtWhenGroup, string message)
             => SendReplyExAsync(quote, addAtWhenGroup, message).Result;
 
+        [Obsolete("Use SendReply instead.")]
         public int SendReplyEx(QMessage quote, bool addAtWhenGroup, params IMessage[] chain)
             => SendReplyExAsync(quote, addAtWhenGroup, chain).Result;
 
+        [Obsolete("Use SendReplyAsync instead.")]
         public Task<int> SendReplyExAsync(QMessage quote, bool addAtWhenGroup, string message)
         {
             if (string.IsNullOrEmpty(message))
@@ -123,6 +159,7 @@ namespace Maila.Cocoa.Framework
             return SendReplyExAsync(quote, addAtWhenGroup, new PlainMessage(message));
         }
 
+        [Obsolete("Use SendReplyAsync instead.")]
         public Task<int> SendReplyExAsync(QMessage quote, bool addAtWhenGroup, params IMessage[] chain)
         {
             if (IsGroup)
@@ -139,6 +176,34 @@ namespace Maila.Cocoa.Framework
             }
 
             return BotAPI.SendPrivateMessage(quote.Id, User.Id, chain);
+        }
+
+
+        public int SendReply(QMessage quote, string message)
+            => SendReplyAsync(quote, message).Result;
+
+        public int SendReply(QMessage quote, params IMessage[] chain)
+            => SendReplyAsync(quote, chain).Result;
+
+        public Task<int> SendReplyAsync(QMessage quote, string message)
+        {
+            if (string.IsNullOrEmpty(message))
+            {
+                return SendReplyAsync(quote);
+            }
+            return SendReplyAsync(quote, new PlainMessage(message));
+        }
+
+        public Task<int> SendReplyAsync(QMessage quote, params IMessage[] chain)
+        {
+            if (IsGroup)
+            {
+                return BotAPI.SendGroupMessage(quote.Id, Group!.Id, chain);
+            }
+            else
+            {
+                return BotAPI.SendPrivateMessage(quote.Id, User.Id, chain);
+            }
         }
 
 

@@ -13,7 +13,10 @@ namespace Maila.Cocoa.Framework.Support
 
         internal static void Init()
         {
-            DataManager.AddHosting(typeof(BotAuth).GetField(nameof(identities), BindingFlags.Static | BindingFlags.NonPublic)!, null, $"BotAuth/{BotAPI.BotQQ}", true);
+            DataManager.AddOptimizeEnabledHosting(
+                typeof(BotAuth).GetField(nameof(identities), BindingFlags.Static | BindingFlags.NonPublic)!,
+                null,
+                $"BotAuth/{BotAPI.BotQQ}");
         }
 
         internal static void Reset()

@@ -13,7 +13,10 @@ namespace Maila.Cocoa.Framework.Support
 
         internal static void Init()
         {
-            DataManager.AddHosting(typeof(BotReg).GetField("data", BindingFlags.Static | BindingFlags.NonPublic)!, null, "BotReg", true);
+            DataManager.AddOptimizeEnabledHosting(
+                typeof(BotReg).GetField("data", BindingFlags.Static | BindingFlags.NonPublic)!,
+                null,
+                "BotReg");
         }
 
         internal static void Reset()

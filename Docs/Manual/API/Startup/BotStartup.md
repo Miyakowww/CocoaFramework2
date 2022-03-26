@@ -20,10 +20,10 @@ public static class BotStartup
 <br>
 
 ## 方法
-- Connect
+- ConnectAndInit
     > 连接 Mirai 并初始化
     > ```C#
-    > public static Task<bool> Connect(BotStartupConfig config);
+    > public static Task<bool> ConnectAndInit(BotStartupConfig config);
     > ```
     > 
     > ### 参数
@@ -33,10 +33,10 @@ public static class BotStartup
     > ### 返回值
     > bool
     > 表示是否初始化成功
-- Disconnect
-    > 断开连接并停止所有模块
+- DisconnectAndSaveData
+    > 断开连接并保存数据
     > ```C#
-    > public static Task Disconnect();
+    > public static Task DisconnectAndSaveData();
     > ```
 - Reconnect
     > 重新连接并重新加载模块

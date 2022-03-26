@@ -26,7 +26,13 @@ namespace Maila.Cocoa.Framework.Core
         public static async Task<bool> TestNetwork()
             => host is not null && await MiraiAPI.About(host) is not null;
 
-        public static async Task<bool> Connect(BotStartupConfig config)
+        [Obsolete("Use ConnectAndInit instead.")]
+        public static Task<bool> Connect(BotStartupConfig config)
+        {
+            return ConnectAndInit(config);
+        }
+
+        public static async Task<bool> ConnectAndInit(BotStartupConfig config)
         {
             await connLock.WaitAsync();
 
@@ -82,7 +88,7 @@ namespace Maila.Cocoa.Framework.Core
 
             try
             {
-                BotAPI.Init();
+                BotAPI.Init(config.EventHandlers);
                 BotAuth.Init();
                 BotReg.Init();
 
@@ -101,7 +107,13 @@ namespace Maila.Cocoa.Framework.Core
             }
         }
 
-        public static async Task Disconnect()
+        [Obsolete("Use DisconnectAndSaveData instead.")]
+        public static Task Disconnect()
+        {
+            return DisconnectAndSaveData();
+        }
+
+        public static async Task DisconnectAndSaveData()
         {
             await connLock.WaitAsync();
 
@@ -211,11 +223,11 @@ namespace Maila.Cocoa.Framework.Core
                     }
                     e = e.InnerException;
                 }
-                BotAPI.OnException?.Invoke(e);
+                BotAPI.OnException(e);
             }
             catch (Exception e)
             {
-                BotAPI.OnException?.Invoke(e);
+                BotAPI.OnException(e);
             }
         }
     }

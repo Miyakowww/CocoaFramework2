@@ -15,9 +15,44 @@ namespace Maila.Cocoa.Framework.Support
         private static Dictionary<long, Dictionary<long, QMemberInfo>>? members;
         private static Dictionary<long, QFriendInfo>? friends;
 
-        private static readonly TimeSpan CredibleTime = TimeSpan.FromMinutes(1);
+        private static readonly TimeSpan CredibleTime = TimeSpan.FromMinutes(5);
         private static DateTime friendsLastSync = DateTime.MinValue;
         private static DateTime groupsLastSync = DateTime.MinValue;
+
+        internal static void Reset()
+        {
+            groups = null;
+            members = null;
+            friends = null;
+        }
+
+        internal static void UpdateFriend(QFriendInfo friend)
+        {
+            if (friends is null)
+            {
+                _ = ReloadFriends();
+                return;
+            }
+
+            friends[friend.Id] = friend;
+        }
+
+        internal static void UpdateMember(QMemberInfo member)
+        {
+            if (groups is null || members is null)
+            {
+                _ = ReloadAllGroupMembers();
+                return;
+            }
+
+            if (!members.TryGetValue(member.Group.Id, out var groupMembers))
+            {
+                _ = ReloadGroupMembers(member.Group.Id);
+                return;
+            }
+
+            groupMembers[member.Id] = member;
+        }
 
         public static async Task ReloadAll()
         {
@@ -26,13 +61,6 @@ namespace Maila.Cocoa.Framework.Support
 
             await f;
             await g;
-        }
-
-        internal static void Reset()
-        {
-            groups = null;
-            members = null;
-            friends = null;
         }
 
         public static async Task ReloadAllGroupMembers()

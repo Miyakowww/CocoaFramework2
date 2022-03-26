@@ -164,9 +164,14 @@ namespace Maila.Cocoa.Framework.Support
         private static CancellationTokenSource? _hosting;
         private static bool stopHosting;
 
-        internal static void AddHosting(FieldInfo field, object? instance, string name, bool optim = false)
+        internal static void AddHosting(FieldInfo field, object? instance, string name)
         {
-            hostingInfos.Add(new(field, instance, name, optim));
+            hostingInfos.Add(new(field, instance, name, false));
+        }
+
+        internal static void AddOptimizeEnabledHosting(FieldInfo field, object? instance, string name)
+        {
+            hostingInfos.Add(new(field, instance, name, true));
         }
 
         internal static async Task SyncAll()
