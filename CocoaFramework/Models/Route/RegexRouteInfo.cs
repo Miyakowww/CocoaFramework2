@@ -165,8 +165,8 @@ namespace Maila.Cocoa.Framework.Models.Route
                             paraType switch
                             {
                                 0 => _default,
-                                1 => new[] { _default! },
-                                2 => new[] { _default! }.ToList(),
+                                1 => new[] { _default },
+                                2 => new[] { _default }.ToList(),
                                 _ => null
                             }));
                     }

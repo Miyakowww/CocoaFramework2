@@ -56,7 +56,7 @@ namespace Maila.Cocoa.Framework.Support
 
             source?.Cancel();
             source = new();
-            string? ver = BotCore.host is null ? null : await MiraiAPI.About(BotCore.host);
+            string? ver = await MiraiAPI.About(BotCore.host);
             if (ver is null)
             {
                 _ = BotCore.DisconnectAndSaveData();
@@ -66,14 +66,14 @@ namespace Maila.Cocoa.Framework.Support
             if (ver.StartsWith('2'))
             {
                 MiraiAPI.ListenAllEvent(
-                    BotCore.host!, BotCore.SessionKey!, BotCore.verifyKey, BotCore.BindingQQ!.Value,
+                    BotCore.host, BotCore.SessionKey, BotCore.verifyKey, BotCore.BindingQQ.Value,
                     HandleEvent,
                     ListenAllEvents, source.Token);
             }
             else
             {
                 MiraiAPI.ListenAllEventv1(
-                    BotCore.host!, BotCore.SessionKey!,
+                    BotCore.host, BotCore.SessionKey,
                     HandleEvent,
                     ListenAllEvents, source.Token);
             }
@@ -118,7 +118,7 @@ namespace Maila.Cocoa.Framework.Support
         public static Task SetEssence(int messageId)
         {
             return BotCore.Connected
-                ? MiraiAPI.SetEssence(BotCore.host!, BotCore.SessionKey!, messageId)
+                ? MiraiAPI.SetEssence(BotCore.host, BotCore.SessionKey, messageId)
                 : throw new NotConnectedException();
         }
 
@@ -132,7 +132,7 @@ namespace Maila.Cocoa.Framework.Support
         public static Task<FileSummary[]> GetGroupFileList(long groupId, string? dir = null)
         {
             return BotCore.Connected
-                ? MiraiAPI.GetGroupFileList(BotCore.host!, BotCore.SessionKey!, groupId, dir)
+                ? MiraiAPI.GetGroupFileList(BotCore.host, BotCore.SessionKey, groupId, dir)
                 : throw new NotConnectedException();
         }
 
@@ -142,7 +142,7 @@ namespace Maila.Cocoa.Framework.Support
         public static Task<FileDetails> GetGroupFileInfo(long groupId, string fileId)
         {
             return BotCore.Connected
-                ? MiraiAPI.GetGroupFileInfo(BotCore.host!, BotCore.SessionKey!, groupId, fileId)
+                ? MiraiAPI.GetGroupFileInfo(BotCore.host, BotCore.SessionKey, groupId, fileId)
                 : throw new NotConnectedException();
         }
 
@@ -153,7 +153,7 @@ namespace Maila.Cocoa.Framework.Support
         public static Task RenameGroupFile(long groupId, string fileId, string newName)
         {
             return BotCore.Connected
-                ? MiraiAPI.RenameGroupFile(BotCore.host!, BotCore.SessionKey!, groupId, fileId, newName)
+                ? MiraiAPI.RenameGroupFile(BotCore.host, BotCore.SessionKey, groupId, fileId, newName)
                 : throw new NotConnectedException();
         }
 
@@ -164,7 +164,7 @@ namespace Maila.Cocoa.Framework.Support
         public static Task MakeFileDirectory(long groupId, string directoryName)
         {
             return BotCore.Connected
-                ? MiraiAPI.MakeFileDirectory(BotCore.host!, BotCore.SessionKey!, groupId, directoryName)
+                ? MiraiAPI.MakeFileDirectory(BotCore.host, BotCore.SessionKey, groupId, directoryName)
                 : throw new NotConnectedException();
         }
 
@@ -175,7 +175,7 @@ namespace Maila.Cocoa.Framework.Support
         public static Task MoveGroupFile(long groupId, string fileId, string newPath)
         {
             return BotCore.Connected
-                ? MiraiAPI.MoveGroupFile(BotCore.host!, BotCore.SessionKey!, groupId, fileId, newPath)
+                ? MiraiAPI.MoveGroupFile(BotCore.host, BotCore.SessionKey, groupId, fileId, newPath)
                 : throw new NotConnectedException();
         }
 
@@ -186,7 +186,7 @@ namespace Maila.Cocoa.Framework.Support
         public static Task DeleteGroupFile(long groupId, string fileId)
         {
             return BotCore.Connected
-                ? MiraiAPI.DeleteGroupFile(BotCore.host!, BotCore.SessionKey!, groupId, fileId)
+                ? MiraiAPI.DeleteGroupFile(BotCore.host, BotCore.SessionKey, groupId, fileId)
                 : throw new NotConnectedException();
         }
 
@@ -201,7 +201,7 @@ namespace Maila.Cocoa.Framework.Support
         public static Task Mute(long groupId, long memberId, int seconds)
         {
             return BotCore.Connected
-                ? MiraiAPI.Mute(BotCore.host!, BotCore.SessionKey!, groupId, memberId, seconds)
+                ? MiraiAPI.Mute(BotCore.host, BotCore.SessionKey, groupId, memberId, seconds)
                 : throw new NotConnectedException();
         }
 
@@ -212,7 +212,7 @@ namespace Maila.Cocoa.Framework.Support
         public static Task Unmute(long groupId, long memberId)
         {
             return BotCore.Connected
-                ? MiraiAPI.Unmute(BotCore.host!, BotCore.SessionKey!, groupId, memberId)
+                ? MiraiAPI.Unmute(BotCore.host, BotCore.SessionKey, groupId, memberId)
                 : throw new NotConnectedException();
         }
 
@@ -223,7 +223,7 @@ namespace Maila.Cocoa.Framework.Support
         public static Task Kick(long groupId, long memberId, string? reason = null)
         {
             return BotCore.Connected
-                ? MiraiAPI.Kick(BotCore.host!, BotCore.SessionKey!, groupId, memberId, reason)
+                ? MiraiAPI.Kick(BotCore.host, BotCore.SessionKey, groupId, memberId, reason)
                 : throw new NotConnectedException();
         }
 
@@ -234,7 +234,7 @@ namespace Maila.Cocoa.Framework.Support
         public static Task Quit(long groupId)
         {
             return BotCore.Connected
-                ? MiraiAPI.Quit(BotCore.host!, BotCore.SessionKey!, groupId)
+                ? MiraiAPI.Quit(BotCore.host, BotCore.SessionKey, groupId)
                 : throw new NotConnectedException();
         }
 
@@ -245,7 +245,7 @@ namespace Maila.Cocoa.Framework.Support
         public static Task MuteAll(long groupId)
         {
             return BotCore.Connected
-                ? MiraiAPI.MuteAll(BotCore.host!, BotCore.SessionKey!, groupId)
+                ? MiraiAPI.MuteAll(BotCore.host, BotCore.SessionKey, groupId)
                 : throw new NotConnectedException();
         }
 
@@ -256,7 +256,7 @@ namespace Maila.Cocoa.Framework.Support
         public static Task UnmuteAll(long groupId)
         {
             return BotCore.Connected
-                ? MiraiAPI.UnmuteAll(BotCore.host!, BotCore.SessionKey!, groupId)
+                ? MiraiAPI.UnmuteAll(BotCore.host, BotCore.SessionKey, groupId)
                 : throw new NotConnectedException();
         }
 
@@ -267,7 +267,7 @@ namespace Maila.Cocoa.Framework.Support
         public static Task<GroupConfig> GetGroupConfig(long groupId)
         {
             return BotCore.Connected
-                ? MiraiAPI.GetGroupConfig(BotCore.host!, BotCore.SessionKey!, groupId)
+                ? MiraiAPI.GetGroupConfig(BotCore.host, BotCore.SessionKey, groupId)
                 : throw new NotConnectedException();
         }
 
@@ -278,7 +278,7 @@ namespace Maila.Cocoa.Framework.Support
         public static Task SetGroupConfig(long groupId, GroupConfig config)
         {
             return BotCore.Connected
-                ? MiraiAPI.SetGroupConfig(BotCore.host!, BotCore.SessionKey!, groupId, config)
+                ? MiraiAPI.SetGroupConfig(BotCore.host, BotCore.SessionKey, groupId, config)
                 : throw new NotConnectedException();
         }
 
@@ -288,7 +288,7 @@ namespace Maila.Cocoa.Framework.Support
         public static Task<(string nickInGroup, string nick, string specialTitle)?> GetMemberInfo(long groupId, long memberId)
         {
             return BotCore.Connected
-                ? MiraiAPI.GetMemberInfo(BotCore.host!, BotCore.SessionKey!, groupId, memberId)
+                ? MiraiAPI.GetMemberInfo(BotCore.host, BotCore.SessionKey, groupId, memberId)
                 : throw new NotConnectedException();
         }
 
@@ -299,7 +299,7 @@ namespace Maila.Cocoa.Framework.Support
         public static Task SetMemberInfo(long groupId, long memberId, string? nickInGroup, string? specialTitle)
         {
             return BotCore.Connected
-                ? MiraiAPI.SetMemberInfo(BotCore.host!, BotCore.SessionKey!, groupId, memberId, nickInGroup, specialTitle)
+                ? MiraiAPI.SetMemberInfo(BotCore.host, BotCore.SessionKey, groupId, memberId, nickInGroup, specialTitle)
                 : throw new NotConnectedException();
         }
 
@@ -315,7 +315,7 @@ namespace Maila.Cocoa.Framework.Support
         public static Task<IImageMessage> UploadImage(UploadType type, Stream imgStream)
         {
             return BotCore.Connected
-                ? MiraiAPI.UploadImage(BotCore.host!, BotCore.SessionKey!, type, imgStream)
+                ? MiraiAPI.UploadImage(BotCore.host, BotCore.SessionKey, type, imgStream)
                 : throw new NotConnectedException();
         }
 
@@ -337,7 +337,7 @@ namespace Maila.Cocoa.Framework.Support
         public static Task<IVoiceMessage> UploadVoice(Stream voiceStream)
         {
             return BotCore.Connected
-                ? MiraiAPI.UploadVoice(BotCore.host!, BotCore.SessionKey!, voiceStream)
+                ? MiraiAPI.UploadVoice(BotCore.host, BotCore.SessionKey, voiceStream)
                 : throw new NotConnectedException();
         }
 
@@ -359,7 +359,7 @@ namespace Maila.Cocoa.Framework.Support
         public static Task<string> UploadFileAndSend(long groupId, string path, Stream fileStream)
         {
             return BotCore.Connected
-                ? MiraiAPI.UploadFileAndSend(BotCore.host!, BotCore.SessionKey!, groupId, path, fileStream)
+                ? MiraiAPI.UploadFileAndSend(BotCore.host, BotCore.SessionKey, groupId, path, fileStream)
                 : throw new NotConnectedException();
         }
 
@@ -385,7 +385,7 @@ namespace Maila.Cocoa.Framework.Support
         public static Task<QFriendInfo[]> GetFriendList()
         {
             return BotCore.Connected
-                ? MiraiAPI.GetFriendList(BotCore.host!, BotCore.SessionKey!)
+                ? MiraiAPI.GetFriendList(BotCore.host, BotCore.SessionKey)
                 : throw new NotConnectedException();
         }
 
@@ -397,7 +397,7 @@ namespace Maila.Cocoa.Framework.Support
         public static Task<QGroupInfo[]> GetGroupList()
         {
             return BotCore.Connected
-                ? MiraiAPI.GetGroupList(BotCore.host!, BotCore.SessionKey!)
+                ? MiraiAPI.GetGroupList(BotCore.host, BotCore.SessionKey)
                 : throw new NotConnectedException();
         }
 
@@ -409,7 +409,7 @@ namespace Maila.Cocoa.Framework.Support
         public static Task<QMemberInfo[]> GetMemberList(long groupId)
         {
             return BotCore.Connected
-                ? MiraiAPI.GetMemberList(BotCore.host!, BotCore.SessionKey!, groupId)
+                ? MiraiAPI.GetMemberList(BotCore.host, BotCore.SessionKey, groupId)
                 : throw new NotConnectedException();
         }
 
@@ -434,17 +434,17 @@ namespace Maila.Cocoa.Framework.Support
 
             if (isGroup)
             {
-                return await MiraiAPI.SendGroupMessage(BotCore.host!, BotCore.SessionKey!, id, quote, chain);
+                return await MiraiAPI.SendGroupMessage(BotCore.host, BotCore.SessionKey, id, quote, chain);
             }
 
             if (temp is not null)
             {
-                return await MiraiAPI.SendTempMessage(BotCore.host!, BotCore.SessionKey!, temp.Value, id, quote, chain);
+                return await MiraiAPI.SendTempMessage(BotCore.host, BotCore.SessionKey, temp.Value, id, quote, chain);
             }
 
             if (BotInfo.HasFriend(id))
             {
-                return await MiraiAPI.SendFriendMessage(BotCore.host!, BotCore.SessionKey!, id, quote, chain);
+                return await MiraiAPI.SendFriendMessage(BotCore.host, BotCore.SessionKey, id, quote, chain);
             }
 
             long[] tempPath = BotInfo.GetTempPath(id);
@@ -453,7 +453,7 @@ namespace Maila.Cocoa.Framework.Support
                 int? msgid;
                 try
                 {
-                    msgid = await MiraiAPI.SendTempMessage(BotCore.host!, BotCore.SessionKey!, t, id, quote, chain);
+                    msgid = await MiraiAPI.SendTempMessage(BotCore.host, BotCore.SessionKey, t, id, quote, chain);
                     if (msgid is null)
                     {
                         continue;
@@ -582,7 +582,7 @@ namespace Maila.Cocoa.Framework.Support
         public static Task Recall(int messageId)
         {
             return BotCore.Connected
-                ? MiraiAPI.Recall(BotCore.host!, BotCore.SessionKey!, messageId)
+                ? MiraiAPI.Recall(BotCore.host, BotCore.SessionKey, messageId)
                 : throw new NotConnectedException();
         }
 
@@ -597,7 +597,7 @@ namespace Maila.Cocoa.Framework.Support
         public static Task SendNudge(long qqId)
         {
             return BotCore.Connected
-                ? MiraiAPI.SendNudge(BotCore.host!, BotCore.SessionKey!, qqId)
+                ? MiraiAPI.SendNudge(BotCore.host, BotCore.SessionKey, qqId)
                 : throw new NotConnectedException();
         }
 
@@ -608,7 +608,7 @@ namespace Maila.Cocoa.Framework.Support
         public static Task SendNudge(long groupId, long qqId)
         {
             return BotCore.Connected
-                ? MiraiAPI.SendNudge(BotCore.host!, BotCore.SessionKey!, groupId, qqId)
+                ? MiraiAPI.SendNudge(BotCore.host, BotCore.SessionKey, groupId, qqId)
                 : throw new NotConnectedException();
         }
 
@@ -623,7 +623,7 @@ namespace Maila.Cocoa.Framework.Support
         public static Task NewFriendRequestResp(long eventId, long fromId, long groupId, NewFriendRequestOperate operate, string message = "")
         {
             return BotCore.Connected
-                ? MiraiAPI.NewFriendRequestResp(BotCore.host!, BotCore.SessionKey!, eventId, fromId, groupId, operate, message)
+                ? MiraiAPI.NewFriendRequestResp(BotCore.host, BotCore.SessionKey, eventId, fromId, groupId, operate, message)
                 : throw new NotConnectedException();
         }
 
@@ -634,7 +634,7 @@ namespace Maila.Cocoa.Framework.Support
         public static Task NewFriendRequestResp(this NewFriendRequestEvent @event, NewFriendRequestOperate operate, string message = "")
         {
             return BotCore.Connected
-                ? MiraiAPI.NewFriendRequestResp(BotCore.host!, BotCore.SessionKey!, @event.EventId, @event.FromId, @event.GroupId, operate, message)
+                ? MiraiAPI.NewFriendRequestResp(BotCore.host, BotCore.SessionKey, @event.EventId, @event.FromId, @event.GroupId, operate, message)
                 : throw new NotConnectedException();
         }
 
@@ -645,7 +645,7 @@ namespace Maila.Cocoa.Framework.Support
         public static Task MemberJoinRequestResp(long eventId, long fromId, long groupId, MemberJoinRequestOperate operate, string message = "")
         {
             return BotCore.Connected
-                ? MiraiAPI.MemberJoinRequestResp(BotCore.host!, BotCore.SessionKey!, eventId, fromId, groupId, operate, message)
+                ? MiraiAPI.MemberJoinRequestResp(BotCore.host, BotCore.SessionKey, eventId, fromId, groupId, operate, message)
                 : throw new NotConnectedException();
         }
 
@@ -656,7 +656,7 @@ namespace Maila.Cocoa.Framework.Support
         public static Task MemberJoinRequestResp(this MemberJoinRequestEvent @event, MemberJoinRequestOperate operate, string message = "")
         {
             return BotCore.Connected
-                ? MiraiAPI.MemberJoinRequestResp(BotCore.host!, BotCore.SessionKey!, @event.EventId, @event.FromId, @event.GroupId, operate, message)
+                ? MiraiAPI.MemberJoinRequestResp(BotCore.host, BotCore.SessionKey, @event.EventId, @event.FromId, @event.GroupId, operate, message)
                 : throw new NotConnectedException();
         }
 
@@ -667,7 +667,7 @@ namespace Maila.Cocoa.Framework.Support
         public static Task BotInvitedJoinGroupRequestResp(long eventId, long fromId, long groupId, BotInvitedJoinGroupRequestOperate operate, string message = "")
         {
             return BotCore.Connected
-                ? MiraiAPI.BotInvitedJoinGroupRequestResp(BotCore.host!, BotCore.SessionKey!, eventId, fromId, groupId, operate, message)
+                ? MiraiAPI.BotInvitedJoinGroupRequestResp(BotCore.host, BotCore.SessionKey, eventId, fromId, groupId, operate, message)
                 : throw new NotConnectedException();
         }
 
@@ -678,7 +678,7 @@ namespace Maila.Cocoa.Framework.Support
         public static Task BotInvitedJoinGroupRequestResp(this BotInvitedJoinGroupRequestEvent @event, BotInvitedJoinGroupRequestOperate operate, string message = "")
         {
             return BotCore.Connected
-                ? MiraiAPI.BotInvitedJoinGroupRequestResp(BotCore.host!, BotCore.SessionKey!, @event.EventId, @event.FromId, @event.GroupId, operate, message)
+                ? MiraiAPI.BotInvitedJoinGroupRequestResp(BotCore.host, BotCore.SessionKey, @event.EventId, @event.FromId, @event.GroupId, operate, message)
                 : throw new NotConnectedException();
         }
 

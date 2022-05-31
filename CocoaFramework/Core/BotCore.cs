@@ -2,6 +2,7 @@
 // Licensed under the GNU AGPLv3
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,6 +16,7 @@ namespace Maila.Cocoa.Framework.Core
         public static long? BindingQQ { get; private set; }
         public static string? SessionKey { get; private set; }
 
+        [MemberNotNullWhen(true, new[] { nameof(host), nameof(BindingQQ), nameof(SessionKey) })]
         public static bool Connected => host is not null && BindingQQ is not null && SessionKey is not null;
 
         internal static string? host;
@@ -40,7 +42,7 @@ namespace Maila.Cocoa.Framework.Core
             {
                 try
                 {
-                    await MiraiAPI.Release(host!, SessionKey!, BindingQQ!.Value);
+                    await MiraiAPI.Release(host, SessionKey, BindingQQ.Value);
                 }
                 catch { }
             }
@@ -121,7 +123,7 @@ namespace Maila.Cocoa.Framework.Core
             {
                 try
                 {
-                    await MiraiAPI.Release(host!, SessionKey!, BindingQQ!.Value);
+                    await MiraiAPI.Release(host, SessionKey, BindingQQ.Value);
                 }
                 catch { }
             }
@@ -164,11 +166,11 @@ namespace Maila.Cocoa.Framework.Core
 
             try
             {
-                await MiraiAPI.Release(host!, SessionKey!, BindingQQ!.Value);
+                await MiraiAPI.Release(host, SessionKey, BindingQQ.Value);
             }
             catch { }
 
-            string? ver = host is null ? null : await MiraiAPI.About(host);
+            string? ver = await MiraiAPI.About(host);
             if (ver is null)
             {
                 SessionKey = null;
@@ -181,16 +183,16 @@ namespace Maila.Cocoa.Framework.Core
 
             try
             {
-                SessionKey = await (IsVer2 ? MiraiAPI.Verify(host!, verifyKey) : MiraiAPI.Authv1(host!, verifyKey));
+                SessionKey = await (IsVer2 ? MiraiAPI.Verify(host, verifyKey) : MiraiAPI.Authv1(host, verifyKey));
                 if (SessionKey is null)
                 {
                     BotAPI.Reset();
                     return;
                 }
-                await (IsVer2 ? MiraiAPI.Bind(host!, SessionKey, BindingQQ!.Value) : MiraiAPI.Verifyv1(host!, SessionKey, BindingQQ!.Value));
+                await (IsVer2 ? MiraiAPI.Bind(host, SessionKey, BindingQQ.Value) : MiraiAPI.Verifyv1(host, SessionKey, BindingQQ.Value));
                 if (!IsVer2)
                 {
-                    await MiraiAPI.SetConfig(host!, SessionKey, null, true);
+                    await MiraiAPI.SetConfig(host, SessionKey, null, true);
                 }
             }
             catch

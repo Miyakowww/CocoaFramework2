@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Maila.Cocoa.Beans.API;
 using Maila.Cocoa.Beans.Models;
@@ -18,7 +19,11 @@ namespace Maila.Cocoa.Framework
         public QUser User { get; }
 
         public bool IsFriend { get; }
+
+        [MemberNotNullWhen(true, new[] { nameof(Group), nameof(Permission), nameof(MemberCard) })]
         public bool IsGroup { get; }
+
+        [MemberNotNullWhen(true, nameof(Group))]
         public bool IsTemp { get; }
 
         public GroupPermission? Permission { get; }
@@ -41,10 +46,12 @@ namespace Maila.Cocoa.Framework
         public MessageSource(long groupId, long qqId, GroupPermission? permission, string? memberCard)
         {
             IsFriend = BotInfo.HasFriend(qqId);
-            IsGroup = permission is not null;
-            IsTemp = permission is null;
+            IsGroup = permission is not null && memberCard is not null;
+            IsTemp = !IsGroup;
+
             Group = new(groupId);
             User = new(qqId);
+
             Permission = permission;
             MemberCard = memberCard;
         }
@@ -57,7 +64,7 @@ namespace Maila.Cocoa.Framework
                 && src.User.Id == User.Id;
         public override int GetHashCode()
             => (IsGroup || IsTemp)
-                ? Group!.Id.GetHashCode() ^ User.Id.GetHashCode()
+                ? Group.Id.GetHashCode() ^ User.Id.GetHashCode()
                 : User.Id.GetHashCode();
 
         public int Send(string message)
@@ -73,7 +80,7 @@ namespace Maila.Cocoa.Framework
 
         public Task<int> SendAsync(params IMessage[] chain)
             => IsGroup
-                ? BotAPI.SendGroupMessage(Group!.Id, chain)
+                ? BotAPI.SendGroupMessage(Group.Id, chain)
                 : BotAPI.SendPrivateMessage(User.Id, chain);
 
 
@@ -98,6 +105,7 @@ namespace Maila.Cocoa.Framework
             {
                 return BotAPI.SendPrivateMessage(User.Id, chain);
             }
+
             List<IMessage> newChain = new(chain.Length + 2);
             if (addAtWhenGroup)
             {
@@ -107,8 +115,9 @@ namespace Maila.Cocoa.Framework
             {
                 newChain.Add(new PlainMessage(groupDelimiter));
             }
+
             newChain.AddRange(chain);
-            return BotAPI.SendGroupMessage(Group!.Id, newChain.ToArray());
+            return BotAPI.SendGroupMessage(Group.Id, newChain.ToArray());
         }
 
 
@@ -137,7 +146,7 @@ namespace Maila.Cocoa.Framework
             };
             newChain.AddRange(chain);
 
-            return BotAPI.SendGroupMessage(Group!.Id, newChain.ToArray());
+            return BotAPI.SendGroupMessage(Group.Id, newChain.ToArray());
         }
 
 
@@ -162,20 +171,20 @@ namespace Maila.Cocoa.Framework
         [Obsolete("Use SendReplyAsync instead.")]
         public Task<int> SendReplyExAsync(QMessage quote, bool addAtWhenGroup, params IMessage[] chain)
         {
-            if (IsGroup)
+            if (!IsGroup)
             {
-                List<IMessage> newChain = new(chain.Length + 2);
-                if (addAtWhenGroup)
-                {
-                    newChain.Add(new AtMessage(User.Id));
-                    newChain.Add(new PlainMessage(" "));
-                }
-
-                newChain.AddRange(chain);
-                return BotAPI.SendGroupMessage(quote.Id, Group!.Id, newChain.ToArray());
+                return BotAPI.SendPrivateMessage(quote.Id, User.Id, chain);
             }
 
-            return BotAPI.SendPrivateMessage(quote.Id, User.Id, chain);
+            List<IMessage> newChain = new(chain.Length + 2);
+            if (addAtWhenGroup)
+            {
+                newChain.Add(new AtMessage(User.Id));
+                newChain.Add(new PlainMessage(" "));
+            }
+
+            newChain.AddRange(chain);
+            return BotAPI.SendGroupMessage(quote.Id, Group.Id, newChain.ToArray());
         }
 
 
@@ -198,7 +207,7 @@ namespace Maila.Cocoa.Framework
         {
             if (IsGroup)
             {
-                return BotAPI.SendGroupMessage(quote.Id, Group!.Id, chain);
+                return BotAPI.SendGroupMessage(quote.Id, Group.Id, chain);
             }
             else
             {
@@ -246,7 +255,7 @@ namespace Maila.Cocoa.Framework
 
         public Task MuteAsync(int duration)
             => IsGroup
-                ? Group!.MuteAsync(User.Id, duration)
+                ? Group.MuteAsync(User.Id, duration)
                 : Task.CompletedTask;
 
         public void Mute(TimeSpan duration)
@@ -254,7 +263,7 @@ namespace Maila.Cocoa.Framework
 
         public Task MuteAsync(TimeSpan duration)
             => IsGroup
-                ? Group!.MuteAsync(User.Id, duration)
+                ? Group.MuteAsync(User.Id, duration)
                 : Task.CompletedTask;
 
         public void Unmute()
@@ -262,7 +271,7 @@ namespace Maila.Cocoa.Framework
 
         public Task UnmuteAsync()
             => IsGroup
-                ? BotAPI.Unmute(Group!.Id, User.Id)
+                ? BotAPI.Unmute(Group.Id, User.Id)
                 : Task.CompletedTask;
     }
 }
