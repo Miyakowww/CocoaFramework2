@@ -5,6 +5,6 @@ namespace Maila.Cocoa.Framework.Models.Processing
 {
     public class GetValue<T>
     {
-        public T? Value;
+        public T? Value { get; set; }
     }
 }

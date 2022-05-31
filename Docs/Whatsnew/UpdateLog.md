@@ -1,5 +1,13 @@
 <h1 align="center">更新日志</h1>
 
+# **2.1.6.3**
+*released May 31, 2022*
+
+## 新特性
+- 进一步优化 nullable 静态分析
+
+<br>
+
 # **2.1.6.2**
 *released May 31, 2022*
 
