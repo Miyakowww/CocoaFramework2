@@ -16,10 +16,10 @@ namespace Maila.Cocoa.Framework
 
         internal UserAutoData(ConcurrentDictionary<long, ConcurrentDictionary<string, object?>> data, long key1, string key2)
         {
-            var _data = data[key1];
+            var userData = data[key1];
             getter = () =>
             {
-                object? val = _data[key2];
+                object? val = userData[key2];
                 if (val is T t)
                 {
                     return t;
@@ -27,12 +27,12 @@ namespace Maila.Cocoa.Framework
                 if (val is JObject jobj)
                 {
                     T? newVal = jobj.ToObject<T>();
-                    _data[key2] = newVal;
+                    userData[key2] = newVal;
                     return newVal;
                 }
                 return default;
             };
-            setter = val => _data[key2] = val;
+            setter = val => userData[key2] = val;
         }
     }
 
@@ -45,10 +45,10 @@ namespace Maila.Cocoa.Framework
 
         internal GroupAutoData(ConcurrentDictionary<long, ConcurrentDictionary<string, object?>> data, long key1, string key2)
         {
-            var _data = data[key1];
+            var groupData = data[key1];
             getter = () =>
             {
-                object? val = _data[key2];
+                object? val = groupData[key2];
                 if (val is T t)
                 {
                     return t;
@@ -56,12 +56,12 @@ namespace Maila.Cocoa.Framework
                 if (val is JObject jobj)
                 {
                     T? newVal = jobj.ToObject<T>();
-                    _data[key2] = newVal;
+                    groupData[key2] = newVal;
                     return newVal;
                 }
                 return default;
             };
-            setter = val => _data[key2] = val;
+            setter = val => groupData[key2] = val;
         }
     }
 
@@ -74,10 +74,10 @@ namespace Maila.Cocoa.Framework
 
         internal SourceAutoData(ConcurrentDictionary<(long?, long), ConcurrentDictionary<string, object?>> data, (long?, long) key1, string key2)
         {
-            var _data = data[key1];
+            var sourceData = data[key1];
             getter = () =>
             {
-                object? val = _data[key2];
+                object? val = sourceData[key2];
                 if (val is T t)
                 {
                     return t;
@@ -85,12 +85,12 @@ namespace Maila.Cocoa.Framework
                 if (val is JObject jobj)
                 {
                     T? newVal = jobj.ToObject<T>();
-                    _data[key2] = newVal;
+                    sourceData[key2] = newVal;
                     return newVal;
                 }
                 return default;
             };
-            setter = val => _data[key2] = val;
+            setter = val => sourceData[key2] = val;
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Maila. All rights reserved.
 // Licensed under the GNU AGPLv3
 
+using System.Collections.Concurrent;
 using System.Text;
 using System.Threading.Tasks;
 using Maila.Cocoa.Beans.API;
@@ -30,6 +31,26 @@ namespace Maila.Cocoa.Framework
 
         public static Task Response(this BotInvitedJoinGroupRequestEvent e, BotInvitedJoinGroupRequestOperate operate, string message = "")
             => BotAPI.BotInvitedJoinGroupRequestResp(e, operate, message);
+
+        #endregion
+
+        #region === Concurrent Dictionary ===
+        
+        internal static TValue Exchange<TKey, TValue>(
+            this ConcurrentDictionary<TKey, TValue> dict,
+            TKey name,
+            TValue addValue,
+            TValue defaultValue)
+            where TKey : notnull
+        {
+            dict.AddOrUpdate(name, addValue, (_, savedValue) =>
+            {
+                defaultValue = savedValue;
+                return addValue;
+            });
+
+            return defaultValue;
+        }
 
         #endregion
 

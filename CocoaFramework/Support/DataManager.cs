@@ -15,12 +15,12 @@ namespace Maila.Cocoa.Framework.Support
     public static class DataManager
     {
         private static readonly ConcurrentDictionary<string, bool> needSave = new();
-        private static readonly ConcurrentDictionary<string, bool> saving = new();
+        private static readonly ConcurrentDictionary<string, bool> savingStatus = new();
         private static int savingCount;
 
         internal static bool SavingData => savingCount > 0;
 
-        public static readonly string DataPath = AppDomain.CurrentDomain.BaseDirectory + "/data/";
+        public static readonly string DataRoot = AppDomain.CurrentDomain.BaseDirectory + "/data/";
 
         public static async void SaveData(string name, object? obj)
         {
@@ -28,50 +28,51 @@ namespace Maila.Cocoa.Framework.Support
             {
                 return;
             }
-            if (saving.GetOrAdd(name, false))
+            
+            if (savingStatus.Exchange(name, true, false))
             {
-                needSave[name] = true;
+                return;
             }
-            else
-            {
-                saving[name] = true;
-                Interlocked.Increment(ref savingCount);
-                string path = $@"{DataPath}{name}.json";
-                if (!Directory.Exists(Path.GetDirectoryName(path)))
-                {
-                    Directory.CreateDirectory(Path.GetDirectoryName(path)!);
-                }
-                await File.WriteAllTextAsync(path, JsonConvert.SerializeObject(obj, Formatting.Indented));
-                while (needSave.GetOrAdd(name, false))
-                {
-                    needSave[name] = false;
-                    await File.WriteAllTextAsync(path, JsonConvert.SerializeObject(obj, Formatting.Indented));
-                }
 
-                saving[name] = false;
-                Interlocked.Decrement(ref savingCount);
+            Interlocked.Increment(ref savingCount);
+            
+            string path = $"{DataRoot}{name}.json";
+            if (!Directory.Exists(Path.GetDirectoryName(path)))
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(path)!);
             }
+            
+            await File.WriteAllTextAsync(path, JsonConvert.SerializeObject(obj, Formatting.Indented));
+            while (needSave.Exchange(name, false, false))
+            {
+                await File.WriteAllTextAsync(path, JsonConvert.SerializeObject(obj, Formatting.Indented));
+            }
+
+            savingStatus[name] = false;
+            Interlocked.Decrement(ref savingCount);
         }
 
         public static async Task<T?> LoadData<T>(string name)
         {
-            while (needSave.GetOrAdd(name, false) || saving.GetOrAdd(name, false))
+            while (needSave.GetOrAdd(name, false) || savingStatus.GetOrAdd(name, false))
             {
                 await Task.Delay(10);
             }
-            return File.Exists($@"{DataPath}{name}.json")
-                ? JsonConvert.DeserializeObject<T>(await File.ReadAllTextAsync($@"{DataPath}{name}.json"))
+            
+            return File.Exists($"{DataRoot}{name}.json")
+                ? JsonConvert.DeserializeObject<T>(await File.ReadAllTextAsync($"{DataRoot}{name}.json"))
                 : default;
         }
 
         public static async Task<object?> LoadData(string name, Type type)
         {
-            while (needSave.GetOrAdd(name, false) || saving.GetOrAdd(name, false))
+            while (needSave.GetOrAdd(name, false) || savingStatus.GetOrAdd(name, false))
             {
                 await Task.Delay(10);
             }
-            return File.Exists($@"{DataPath}{name}.json")
-                ? JsonConvert.DeserializeObject(await File.ReadAllTextAsync($@"{DataPath}{name}.json"), type)
+            
+            return File.Exists($"{DataRoot}{name}.json")
+                ? JsonConvert.DeserializeObject(await File.ReadAllTextAsync($"{DataRoot}{name}.json"), type)
                 : default;
         }
 
@@ -80,9 +81,9 @@ namespace Maila.Cocoa.Framework.Support
             private readonly FieldInfo field;
             private readonly object? instance;
             private readonly string fileName;
-            private readonly bool optim;
             private readonly string filePath;
             private readonly string folderPath;
+            private readonly bool optim;
             private string last = string.Empty;
             private DateTime lastSave = DateTime.MinValue;
 
@@ -90,10 +91,11 @@ namespace Maila.Cocoa.Framework.Support
             {
                 this.field = field;
                 this.instance = instance;
-                this.optim = optim;
                 this.fileName = fileName;
-                filePath = $"{DataPath}{fileName}.json";
-                folderPath = Path.GetDirectoryName(filePath) ?? DataPath;
+                this.optim = optim;
+                
+                filePath = $"{DataRoot}{fileName}.json";
+                folderPath = Path.GetDirectoryName(filePath) ?? DataRoot;
             }
 
             private int _lock;
@@ -106,6 +108,7 @@ namespace Maila.Cocoa.Framework.Support
                 }
 
                 string current = JsonConvert.SerializeObject(field.GetValue(instance));
+                
                 if (!File.Exists(filePath))
                 {
                     if (optim && current == "{}")
@@ -116,11 +119,13 @@ namespace Maila.Cocoa.Framework.Support
                     {
                         SaveData(fileName, field.GetValue(instance));
                     }
+                    
                     last = current;
                 }
                 else if (File.GetLastWriteTimeUtc(filePath) > lastSave)
                 {
                     field.SetValue(instance, await LoadData(fileName, field.FieldType));
+                    
                     try
                     {
                         last = JsonConvert.SerializeObject(field.GetValue(instance));
