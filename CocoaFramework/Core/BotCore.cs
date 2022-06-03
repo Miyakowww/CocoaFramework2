@@ -99,7 +99,7 @@ namespace Maila.Cocoa.Framework.Core
                 ModuleCore.Init(config.Assemblies.Distinct());
                 MiddlewareCore.Init(config.Middlewares);
 
-                DataManager.StartHosting(config.autoSave);
+                DataHosting.StartHosting(config.autoSave);
 
                 return true;
             }
@@ -134,7 +134,7 @@ namespace Maila.Cocoa.Framework.Core
 
             try
             {
-                await DataManager.StopHosting();
+                await DataHosting.StopHosting();
 
                 BotAPI.Reset();
                 BotAuth.Reset();

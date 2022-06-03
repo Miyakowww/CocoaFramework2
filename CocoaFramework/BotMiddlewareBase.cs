@@ -43,7 +43,7 @@ namespace Maila.Cocoa.Framework
                     .GetFields(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
                     .Where(f => f.GetCustomAttribute<HostingAttribute>() is not null && f.GetCustomAttribute<DisabledAttribute>() is null))
             {
-                DataManager.AddHosting(field, this, $"{DataRoot}Field_{field.Name}");
+                DataHosting.AddHosting(field, this, $"{DataRoot}Field_{field.Name}");
             }
         }
 
