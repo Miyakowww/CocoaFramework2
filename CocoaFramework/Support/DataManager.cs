@@ -3,9 +3,7 @@
 
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.IO;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
@@ -28,20 +26,20 @@ namespace Maila.Cocoa.Framework.Support
             {
                 return;
             }
-            
+
             if (savingStatus.Exchange(name, true, false))
             {
                 return;
             }
 
             Interlocked.Increment(ref savingCount);
-            
+
             string path = $"{DataRoot}{name}.json";
             if (!Directory.Exists(Path.GetDirectoryName(path)))
             {
                 Directory.CreateDirectory(Path.GetDirectoryName(path)!);
             }
-            
+
             await File.WriteAllTextAsync(path, JsonConvert.SerializeObject(obj, Formatting.Indented));
             while (needSave.Exchange(name, false, false))
             {
@@ -58,7 +56,7 @@ namespace Maila.Cocoa.Framework.Support
             {
                 await Task.Delay(10);
             }
-            
+
             return File.Exists($"{DataRoot}{name}.json")
                 ? JsonConvert.DeserializeObject<T>(await File.ReadAllTextAsync($"{DataRoot}{name}.json"))
                 : default;
@@ -70,7 +68,7 @@ namespace Maila.Cocoa.Framework.Support
             {
                 await Task.Delay(10);
             }
-            
+
             return File.Exists($"{DataRoot}{name}.json")
                 ? JsonConvert.DeserializeObject(await File.ReadAllTextAsync($"{DataRoot}{name}.json"), type)
                 : default;

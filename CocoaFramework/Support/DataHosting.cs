@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -23,7 +24,7 @@ namespace Maila.Cocoa.Framework.Support
             private readonly string filePath;
             private readonly string folderPath;
             private readonly bool optim;
-            private string last = string.Empty;
+            private byte[] lastHash = Array.Empty<byte>();
             private DateTime lastSave = DateTime.MinValue;
 
             public HostingInfo(FieldInfo field, object? instance, string fileName, bool optim)
@@ -47,6 +48,7 @@ namespace Maila.Cocoa.Framework.Support
                 }
 
                 string current = JsonConvert.SerializeObject(field.GetValue(instance));
+                byte[] currentHash = MD5.HashData(Encoding.UTF8.GetBytes(current));
 
                 if (!File.Exists(filePath))
                 {
@@ -59,7 +61,7 @@ namespace Maila.Cocoa.Framework.Support
                         DataManager.SaveData(fileName, field.GetValue(instance));
                     }
 
-                    last = current;
+                    lastHash = currentHash;
                 }
                 else if (File.GetLastWriteTimeUtc(filePath) > lastSave)
                 {
@@ -67,7 +69,8 @@ namespace Maila.Cocoa.Framework.Support
 
                     try
                     {
-                        last = JsonConvert.SerializeObject(field.GetValue(instance));
+                        string last = JsonConvert.SerializeObject(field.GetValue(instance));
+                        lastHash = MD5.HashData(Encoding.UTF8.GetBytes(last));
                     }
                     catch
                     {
@@ -78,10 +81,10 @@ namespace Maila.Cocoa.Framework.Support
                 {
                     Optimize();
                 }
-                else if (current != last)
+                else if (!currentHash.SequenceEqual(lastHash))
                 {
                     DataManager.SaveData(fileName, field.GetValue(instance));
-                    last = current;
+                    lastHash = currentHash;
                 }
 
                 lastSave = DateTime.UtcNow;

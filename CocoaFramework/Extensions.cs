@@ -35,7 +35,7 @@ namespace Maila.Cocoa.Framework
         #endregion
 
         #region === Concurrent Dictionary ===
-        
+
         internal static TValue Exchange<TKey, TValue>(
             this ConcurrentDictionary<TKey, TValue> dict,
             TKey name,
