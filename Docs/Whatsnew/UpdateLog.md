@@ -6,6 +6,9 @@
 ## 优化
 - 代码质量与性能提升
 
+## 变更
+- DataManager.DataPath 更名为 DataManager.DataRoot
+
 <br>
 
 # **2.1.6.3**
