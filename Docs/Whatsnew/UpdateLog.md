@@ -1,5 +1,13 @@
 <h1 align="center">更新日志</h1>
 
+# **2.1.6.6**
+*released October 31, 2022*
+
+## 优化
+- 发送图片功能支持 Linux 平台
+
+<br>
+
 # **2.1.6.5**
 *released October 26, 2022*
 
