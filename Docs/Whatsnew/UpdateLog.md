@@ -1,5 +1,19 @@
 <h1 align="center">更新日志</h1>
 
+# **2.1.7**
+*released November 19, 2022*
+
+## 修复
+- 解决 AtAllMessage 和 MusicShareMessage 无法发送的问题
+
+## 变更
+- 更新目标框架至 .NET 6.0
+
+## 新特性
+- 新增 MessageBuilder 类，用于更方便地构建消息链
+
+<br>
+
 # **2.1.6.6**
 *released October 31, 2022*
 

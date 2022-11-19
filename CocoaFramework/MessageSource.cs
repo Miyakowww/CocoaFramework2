@@ -68,15 +68,19 @@ namespace Maila.Cocoa.Framework
                 : User.Id.GetHashCode();
 
         public int Send(string message)
-            => SendAsync(message).Result;
+            => SendAsync(new PlainMessage(message)).Result;
+
+        public int Send(MessageBuilder builder)
+            => SendAsync(builder.ToMessageChain()).Result;
 
         public int Send(params IMessage[] chain)
             => SendAsync(chain).Result;
 
         public Task<int> SendAsync(string message)
-        {
-            return SendAsync(new PlainMessage(message));
-        }
+            => SendAsync(new PlainMessage(message));
+
+        public Task<int> SendAsync(MessageBuilder builder)
+            => SendAsync(builder.ToMessageChain());
 
         public Task<int> SendAsync(params IMessage[] chain)
             => IsGroup
@@ -122,15 +126,19 @@ namespace Maila.Cocoa.Framework
 
 
         public int SendWithAt(string message)
-            => SendWithAtAsync(message).Result;
+            => SendWithAtAsync(new PlainMessage(message)).Result;
+
+        public int SendWithAt(MessageBuilder builder)
+            => SendWithAtAsync(builder.ToMessageChain()).Result;
 
         public int SendWithAt(params IMessage[] chain)
             => SendWithAtAsync(chain).Result;
 
         public Task<int> SendWithAtAsync(string message)
-        {
-            return SendWithAtAsync(new PlainMessage(message));
-        }
+            => SendWithAtAsync(new PlainMessage(message));
+
+        public Task<int> SendWithAtAsync(MessageBuilder builder)
+            => SendWithAtAsync(builder.ToMessageChain());
 
         public Task<int> SendWithAtAsync(params IMessage[] chain)
         {
@@ -191,6 +199,9 @@ namespace Maila.Cocoa.Framework
         public int SendReply(QMessage quote, string message)
             => SendReplyAsync(quote, message).Result;
 
+        public int SendReply(QMessage quote, MessageBuilder builder)
+            => SendReplyAsync(quote, builder.ToMessageChain()).Result;
+
         public int SendReply(QMessage quote, params IMessage[] chain)
             => SendReplyAsync(quote, chain).Result;
 
@@ -202,6 +213,9 @@ namespace Maila.Cocoa.Framework
             }
             return SendReplyAsync(quote, new PlainMessage(message));
         }
+
+        public Task<int> SendReplyAsync(QMessage quote, MessageBuilder builder)
+            => SendReplyAsync(quote, builder.ToMessageChain());
 
         public Task<int> SendReplyAsync(QMessage quote, params IMessage[] chain)
         {
@@ -217,15 +231,19 @@ namespace Maila.Cocoa.Framework
 
 
         public int SendPrivate(string message)
-            => SendPrivateAsync(message).Result;
+            => SendPrivateAsync(new PlainMessage(message)).Result;
+
+        public int SendPrivate(MessageBuilder builder)
+            => SendPrivateAsync(builder.ToMessageChain()).Result;
 
         public int SendPrivate(params IMessage[] chain)
             => SendPrivateAsync(chain).Result;
 
         public Task<int> SendPrivateAsync(string message)
-        {
-            return SendPrivateAsync(new PlainMessage(message));
-        }
+            => SendPrivateAsync(new PlainMessage(message));
+
+        public Task<int> SendPrivateAsync(MessageBuilder builder)
+            => SendPrivateAsync(builder.ToMessageChain());
 
         public Task<int> SendPrivateAsync(params IMessage[] chain)
             => BotAPI.SendPrivateMessage(User.Id, chain);
