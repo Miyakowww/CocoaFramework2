@@ -19,6 +19,7 @@ namespace Maila.Cocoa.Framework
         public QUser User { get; }
 
         public bool IsFriend { get; }
+        public bool IsStranger { get; }
 
         [MemberNotNullWhen(true, new[] { nameof(Group), nameof(Permission), nameof(MemberCard) })]
         public bool IsGroup { get; }
@@ -29,14 +30,15 @@ namespace Maila.Cocoa.Framework
         public GroupPermission? Permission { get; }
         public string? MemberCard { get; }
 
-        public MessageSource(long qqId)
+        public MessageSource(long qqId, bool isFriend)
         {
-            if (!BotInfo.HasFriend(qqId))
+            if (isFriend && !BotInfo.HasFriend(qqId))
             {
                 _ = BotInfo.ReloadFriends();
             }
 
-            IsFriend = true;
+            IsFriend = isFriend;
+            IsStranger = !isFriend;
             IsGroup = false;
             IsTemp = false;
             Group = null;
@@ -254,7 +256,14 @@ namespace Maila.Cocoa.Framework
 
         public async Task<int> SendImageAsync(string path)
         {
-            var image = await BotAPI.UploadImage(IsGroup ? UploadType.Group : IsFriend ? UploadType.Friend : UploadType.Temp, path);
+            var image = await BotAPI.UploadImage(
+                (IsGroup, IsFriend || IsStranger) switch
+                {
+                    (true, _) => UploadType.Group,
+                    (_, true) => UploadType.Friend,
+                    _ => UploadType.Temp,
+                }, path);
+
             return await SendAsync(image);
         }
 

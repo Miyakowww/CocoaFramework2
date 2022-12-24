@@ -87,6 +87,12 @@ namespace Maila.Cocoa.Framework
             return this;
         }
 
+        public MessageBuilder MiraiCode(string code)
+        {
+            chain.Add(new MiraiCodeMessage(code));
+            return this;
+        }
+
 
         public static Task<IImageMessage> Image(UploadType type, string path)
             => BotAPI.UploadImage(type, path);

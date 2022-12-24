@@ -689,7 +689,7 @@ namespace Maila.Cocoa.Framework.Support
     {
         public static void OnFriendMessage(FriendMessageEvent evt)
         {
-            BotCore.OnMessage(new(evt.Sender.Id), new(evt.MessageChain.ToArray()));
+            BotCore.OnMessage(new(evt.Sender.Id, true), new(evt.MessageChain.ToArray()));
         }
 
         public static void OnGroupMessage(GroupMessageEvent evt)
@@ -700,6 +700,11 @@ namespace Maila.Cocoa.Framework.Support
         public static void OnTempMessage(TempMessageEvent evt)
         {
             BotCore.OnMessage(new(evt.Sender.Group.Id, evt.Sender.Id, null, null), new(evt.MessageChain.ToArray()));
+        }
+
+        public static void OnStrangerMessage(StrangerMessageEvent evt)
+        {
+            BotCore.OnMessage(new(evt.Sender.Id, false), new(evt.MessageChain.ToArray()));
         }
 
         public static void OnBotJoinGroup(BotJoinGroupEvent evt)
