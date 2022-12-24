@@ -57,9 +57,7 @@ namespace Maila.Cocoa.Framework.Models
             => SendMessageAsync(chain).Result;
 
         public Task<int> SendMessageAsync(string message)
-        {
-            return BotAPI.SendGroupMessage(Id, new PlainMessage(message));
-        }
+            => BotAPI.SendGroupMessage(Id, new PlainMessage(message));
 
         public Task<int> SendMessageAsync(params IMessage[] chain)
             => BotAPI.SendGroupMessage(Id, chain);

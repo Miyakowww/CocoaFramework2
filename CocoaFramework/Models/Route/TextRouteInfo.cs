@@ -20,6 +20,8 @@ namespace Maila.Cocoa.Framework.Models.Route
 
         private readonly int srcIndex;
         private readonly int msgIndex;
+        private readonly int msgInfoIndex;
+        private readonly int asyncMeetingIndex;
         private readonly int argCount;
         private readonly List<AutoDataIndex> autoDataIndices;
 
@@ -55,6 +57,8 @@ namespace Maila.Cocoa.Framework.Models.Route
             autoDataIndices = new();
             srcIndex = -1;
             msgIndex = -1;
+            msgInfoIndex = -1;
+            asyncMeetingIndex = -1;
 
             for (int i = 0; i < argCount; i++)
             {
@@ -72,6 +76,14 @@ namespace Maila.Cocoa.Framework.Models.Route
                 else if (msgIndex == -1 && paraType == typeof(QMessage))
                 {
                     msgIndex = i;
+                }
+                else if (msgInfoIndex == -1 && paraType == typeof(MessageInfo))
+                {
+                    msgInfoIndex = i;
+                }
+                else if (asyncMeetingIndex == -1 && paraType == typeof(AsyncMeeting))
+                {
+                    asyncMeetingIndex = i;
                 }
                 else if (paraType.IsGenericType)
                 {
@@ -154,6 +166,14 @@ namespace Maila.Cocoa.Framework.Models.Route
             if (msgIndex != -1)
             {
                 args[msgIndex] = msg;
+            }
+            if (msgInfoIndex != -1)
+            {
+                args[msgInfoIndex] = new MessageInfo(src, msg);
+            }
+            if (asyncMeetingIndex != -1)
+            {
+                args[asyncMeetingIndex] = new AsyncMeeting(src);
             }
             foreach (var autoDataIndex in autoDataIndices)
             {

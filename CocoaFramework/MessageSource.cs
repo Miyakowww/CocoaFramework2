@@ -30,7 +30,7 @@ namespace Maila.Cocoa.Framework
         public GroupPermission? Permission { get; }
         public string? MemberCard { get; }
 
-        public MessageSource(long qqId, bool isFriend)
+        public MessageSource(long qqId, bool isFriend = true)
         {
             if (isFriend && !BotInfo.HasFriend(qqId))
             {
@@ -48,6 +48,7 @@ namespace Maila.Cocoa.Framework
         public MessageSource(long groupId, long qqId, GroupPermission? permission, string? memberCard)
         {
             IsFriend = BotInfo.HasFriend(qqId);
+            IsStranger = BotInfo.HasStranger(qqId);
             IsGroup = permission is not null && memberCard is not null;
             IsTemp = !IsGroup;
 

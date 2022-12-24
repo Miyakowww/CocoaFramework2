@@ -24,13 +24,15 @@
   - 参数名为正则表达式中的组名且类型为 string 的参数将被传入该组匹配到的字符串，如果该组会进行多次匹配（如 (?\<name>abc)+）则会传入匹配到的最后一个字符串。在 TextRoute 中无效
   - 参数名为正则表达式中的组名且类型为 string[] 或 List\<string> 的参数将被传入该组匹配到的全部字符串。在 TextRoute 中无效
   - 类型为 UserAutoData、GroupAutoData、SourceAutoData 的参数将根据消息来源提供对应的数据。详见 [AutoData](./AutoData.md)
+  - 类型为 MessageInfo 和 AsyncMeeting 时，将被传入对应的实例
 
 - 返回值
   - 入口方法的返回值可以是任意类型
   - 如果为 void 表示一旦被调用就代表消息被处理
   - 如果为 bool 类型表示消息是否被处理
-  - 如果为 string 或 StringBuilder 类型且不为空将自动向来源发送对应文本，否则表示消息未被处理
+  - 如果为 string、StringBuilder 或 MessageBuilder 类型且不为空将自动向来源发送对应文本，否则表示消息未被处理
   - 如果为 IEnumerator 或 IEnumerable 会被自动添加为 [Meeting](./Meeting.md)
+  - 如果为 Task\<string、StringBuilder 或 MessageBuilder>，则调用时消息会被立即标记为处理。Task 完成后会自动向来源发送对应文本
   - 如果为其他值类型，返回结果不为默认值将代表消息被处理
   - 如果为其他引用类型，返回结果不为 null 将代表消息被处理
 

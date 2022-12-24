@@ -4,6 +4,7 @@
 using System;
 using System.Collections;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Maila.Cocoa.Framework.Models.Route
 {
@@ -33,6 +34,28 @@ namespace Maila.Cocoa.Framework.Models.Route
             {
                 return StringBuilder;
             }
+            if (type == typeof(MessageBuilder))
+            {
+                return MessageBuilder;
+            }
+            if (type.IsGenericType
+                && type.GetGenericTypeDefinition() == typeof(Task<>)
+                && type.GenericTypeArguments.Length > 0)
+            {
+                var genericType = type.GenericTypeArguments[0];
+                if (genericType == typeof(string))
+                {
+                    return StringTask;
+                }
+                if (genericType == typeof(StringBuilder))
+                {
+                    return StringBuilderTask;
+                }
+                if (genericType == typeof(MessageBuilder))
+                {
+                    return MessageBuilderTask;
+                }
+            }
             return null;
         }
 
@@ -42,6 +65,7 @@ namespace Maila.Cocoa.Framework.Models.Route
             {
                 return false;
             }
+
             Meeting.Start(src, meeting);
             return true;
         }
@@ -52,6 +76,7 @@ namespace Maila.Cocoa.Framework.Models.Route
             {
                 return false;
             }
+
             Meeting.Start(src, meeting);
             return true;
         }
@@ -63,6 +88,7 @@ namespace Maila.Cocoa.Framework.Models.Route
             {
                 return false;
             }
+
             src.Send(res);
             return true;
         }
@@ -73,7 +99,76 @@ namespace Maila.Cocoa.Framework.Models.Route
             {
                 return false;
             }
+
             src.Send(res.ToString());
+            return true;
+        }
+
+        private static bool MessageBuilder(MessageSource src, object? result)
+        {
+            if (result is not MessageBuilder builder)
+            {
+                return false;
+            }
+
+            src.Send(builder);
+            return true;
+        }
+
+        private static bool StringTask(MessageSource src, object? result)
+        {
+            if (result is not Task<string> task)
+            {
+                return false;
+            }
+
+            Task.Run(async () =>
+            {
+                var res = await task;
+                if (!string.IsNullOrEmpty(res))
+                {
+                    src.Send(res);
+                }
+            });
+
+            return true;
+        }
+
+        private static bool StringBuilderTask(MessageSource src, object? result)
+        {
+            if (result is not Task<StringBuilder> task)
+            {
+                return false;
+            }
+
+            Task.Run(async () =>
+            {
+                var res = await task;
+                if (res is { Length: > 0 })
+                {
+                    src.Send(res.ToString());
+                }
+            });
+
+            return true;
+        }
+
+        private static bool MessageBuilderTask(MessageSource src, object? result)
+        {
+            if (result is not Task<MessageBuilder> task)
+            {
+                return false;
+            }
+
+            Task.Run(async () =>
+            {
+                var res = await task;
+                if (res is not null)
+                {
+                    src.Send(res);
+                }
+            });
+
             return true;
         }
     }

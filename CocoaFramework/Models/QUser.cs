@@ -14,6 +14,7 @@ namespace Maila.Cocoa.Framework.Models
 
         public UserIdentity Identity => BotAuth.GetIdentity(Id);
         public bool IsFriend => BotInfo.HasFriend(Id);
+        public bool IsStranger => BotInfo.HasStranger(Id);
 
         public bool IsOwner => Identity.Fit(UserIdentity.Owner);
         public bool IsAdmin => Identity.Fit(UserIdentity.Admin);
@@ -38,9 +39,7 @@ namespace Maila.Cocoa.Framework.Models
             => SendMessageAsync(chain).Result;
 
         public Task<int> SendMessageAsync(string message)
-        {
-            return BotAPI.SendPrivateMessage(Id, new PlainMessage(message));
-        }
+            => BotAPI.SendPrivateMessage(Id, new PlainMessage(message));
 
         public Task<int> SendMessageAsync(params IMessage[] chain)
             => BotAPI.SendPrivateMessage(Id, chain);

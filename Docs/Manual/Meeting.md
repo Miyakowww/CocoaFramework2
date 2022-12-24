@@ -9,7 +9,7 @@ Meeting 是对一段连续的消息处理过程的抽象，可用于实现对话
 
 ```C#
 [TextRoute("加法")]
-[TextRoute("sum")]
+[TextRoute("add")]
 public IEnumerator Proc(MessageSource src)
 {
     MessageReceiver receiver = new();

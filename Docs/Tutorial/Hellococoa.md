@@ -67,3 +67,11 @@ public class Hello : BotModuleBase
 
 ## 完成
 运行程序，进入 QQ 测试功能
+
+<br>
+
+## 备注
+如果希望主动发送消息，例如在启动时向管理员发送通知，可以通过 BotAPI.SendFriendMessage 或 BotAPI.SendGroupMessage 实现。其他与机器人相关的 API 也位于 BotAPI 类中。
+```C#
+BotAPI.SendFriendMessage(123456, new PlainMessage("message"));
+```

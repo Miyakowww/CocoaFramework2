@@ -442,7 +442,7 @@ namespace Maila.Cocoa.Framework.Support
                 return await MiraiAPI.SendTempMessage(BotCore.host, BotCore.SessionKey, temp.Value, id, quote, chain);
             }
 
-            if (BotInfo.HasFriend(id))
+            if (BotInfo.HasFriend(id) || BotInfo.HasStranger(id))
             {
                 return await MiraiAPI.SendFriendMessage(BotCore.host, BotCore.SessionKey, id, quote, chain);
             }

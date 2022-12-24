@@ -14,6 +14,7 @@ namespace Maila.Cocoa.Framework.Support
         private static Dictionary<long, QGroupInfo>? groups;
         private static Dictionary<long, Dictionary<long, QMemberInfo>>? members;
         private static Dictionary<long, QFriendInfo>? friends;
+        private static readonly Dictionary<long, QStrangerInfo> strangers = new();
 
         private static readonly TimeSpan CredibleTime = TimeSpan.FromMinutes(5);
         private static DateTime friendsLastSync = DateTime.MinValue;
@@ -24,6 +25,7 @@ namespace Maila.Cocoa.Framework.Support
             groups = null;
             members = null;
             friends = null;
+            strangers.Clear();
         }
 
         internal static void UpdateFriend(QFriendInfo friend)
@@ -187,6 +189,26 @@ namespace Maila.Cocoa.Framework.Support
                 ReloadAllGroupMembers().Wait();
             }
             return members?.Where(p => p.Value.ContainsKey(qqId)).Select(p => p.Key).ToArray() ?? Array.Empty<long>();
+        }
+
+        public static void RegistStranger(QStrangerInfo strangerInfo)
+        {
+            strangers[strangerInfo.Id] = strangerInfo;
+        }
+
+        public static bool HasStranger(long qqId)
+        {
+            return strangers.ContainsKey(qqId);
+        }
+
+        public static QStrangerInfo[] GetStrangerList()
+        {
+            return strangers.Values.ToArray();
+        }
+
+        public static QStrangerInfo? GetStrangerInfo(long qqId)
+        {
+            return strangers.GetValueOrDefault(qqId);
         }
     }
 }

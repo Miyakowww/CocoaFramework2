@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 using Maila.Cocoa.Beans.Models.Messages;
@@ -37,8 +38,9 @@ namespace Maila.Cocoa.Framework
         public override string ToString()
             => PlainText;
 
-        public static implicit operator string(QMessage msg)
-            => msg.PlainText;
+        [return: NotNullIfNotNull("msg")]
+        public static implicit operator string?(QMessage? msg)
+            => msg?.PlainText;
 
         public void Recall()
             => RecallAsync();

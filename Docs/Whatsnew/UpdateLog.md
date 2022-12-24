@@ -1,5 +1,22 @@
 <h1 align="center">更新日志</h1>
 
+# **2.1.8**
+*released December 25, 2022*
+
+## 修复
+- 修复 MemberCardChangeEvent 无法接收的问题
+
+## 优化
+- 允许将 null QMessage 转换为 string?（仍然为 null）
+
+## 新特性
+- 新增 AsyncMeeting，通过异步更为直观地实现对话。使用 async/await 在任何地方获取收到的消息
+- 支持接收陌生人消息
+- 支持收发 MiraiCodeMessage
+- Route 参数列表支持 MessageInfo 和 AsyncMeeting。返回值支持 MessageBuilder 和 Task\<>
+
+<br>
+
 # **2.1.7**
 *released November 19, 2022*
 

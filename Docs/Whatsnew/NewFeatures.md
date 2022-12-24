@@ -45,3 +45,8 @@ protected virtual void OnMessage(MessageSource src, QMessage msg, Action<Message
 ## AutoData
 ---
 基于消息来源提供不同的数据，可以极大简化对简单数据的管理。详见 [AutoData](../Manual/AutoData.md)
+
+<br>
+
+## AsyncMeeting
+用更加自然的方式实现对话。详见 [AsyncMeeting](../Manual/AsyncMeeting.md)
