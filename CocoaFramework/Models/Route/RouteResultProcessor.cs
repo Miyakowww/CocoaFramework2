@@ -89,7 +89,7 @@ namespace Maila.Cocoa.Framework.Models.Route
                 return false;
             }
 
-            src.Send(res);
+            src.SendAsync(res);
             return true;
         }
 
@@ -100,7 +100,7 @@ namespace Maila.Cocoa.Framework.Models.Route
                 return false;
             }
 
-            src.Send(res.ToString());
+            src.SendAsync(res.ToString());
             return true;
         }
 
@@ -111,7 +111,7 @@ namespace Maila.Cocoa.Framework.Models.Route
                 return false;
             }
 
-            src.Send(builder);
+            src.SendAsync(builder);
             return true;
         }
 
@@ -127,7 +127,7 @@ namespace Maila.Cocoa.Framework.Models.Route
                 var res = await task;
                 if (!string.IsNullOrEmpty(res))
                 {
-                    src.Send(res);
+                    _ = src.SendAsync(res);
                 }
             });
 
@@ -146,7 +146,7 @@ namespace Maila.Cocoa.Framework.Models.Route
                 var res = await task;
                 if (res is { Length: > 0 })
                 {
-                    src.Send(res.ToString());
+                    _ = src.SendAsync(res.ToString());
                 }
             });
 
@@ -165,7 +165,7 @@ namespace Maila.Cocoa.Framework.Models.Route
                 var res = await task;
                 if (res is not null)
                 {
-                    src.Send(res);
+                    _ = src.SendAsync(res);
                 }
             });
 

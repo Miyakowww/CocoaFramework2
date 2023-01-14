@@ -12,7 +12,7 @@ AsyncMeeting 是 [Meeting](./Meeting.md) 的异步实现形式。
 [TextRoute("add")]
 public static async Task<string> Proc(AsyncMeeting am)
 {
-    am.Send("请输入第一个数")
+    am.Send("请输入第一个数");
     var result = await am.Wait();
     int a = int.Parse(result!.Message); // 未设置超时，result 不为空
 

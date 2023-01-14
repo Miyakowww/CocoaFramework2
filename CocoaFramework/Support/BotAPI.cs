@@ -367,7 +367,7 @@ namespace Maila.Cocoa.Framework.Support
         /// <returns>FileId</returns>
         /// <exception cref="MiraiException" />
         /// <exception cref="WebException" />
-        public static async Task<string?> UploadFileAndSend(long groupId, string targetPath, string filePath)
+        public static async Task<string> UploadFileAndSend(long groupId, string targetPath, string filePath)
         {
             await using FileStream fs = new(filePath, FileMode.Open);
             return await UploadFileAndSend(groupId, targetPath, fs);

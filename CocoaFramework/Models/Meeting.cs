@@ -137,7 +137,7 @@ namespace Maila.Cocoa.Framework.Models
                     case string or StringBuilder:
                         {
                             var retMsg = proc.Current as string ?? (proc.Current as StringBuilder)!.ToString();
-                            src?.Send(retMsg);
+                            src?.SendAsync(retMsg);
                             break;
                         }
                     case IEnumerator or IEnumerable:

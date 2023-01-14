@@ -16,7 +16,6 @@ namespace Maila.Cocoa.Framework.Models.Route
     {
         private readonly Regex[] regexs;
         private readonly bool[] atRequired;
-        private readonly BotModuleBase module;
 
         private readonly int srcIndex;
         private readonly int msgIndex;
@@ -32,17 +31,15 @@ namespace Maila.Cocoa.Framework.Models.Route
             public int bindingType;
             public string name;
             public Type type;
-            public BotModuleBase? sourceModule;
-            public Type? sourceModuleType;
+            public BotModuleBase sourceModule;
 
-            public AutoDataIndex(int argIndex, int bindingType, string name, Type type, BotModuleBase? sourceModule, Type? sourceModuleType)
+            public AutoDataIndex(int argIndex, int bindingType, string name, Type type, BotModuleBase sourceModule)
             {
                 this.argIndex = argIndex;
                 this.bindingType = bindingType;
                 this.name = name;
                 this.type = type;
                 this.sourceModule = sourceModule;
-                this.sourceModuleType = sourceModuleType;
             }
         }
 
@@ -68,7 +65,6 @@ namespace Maila.Cocoa.Framework.Models.Route
         public RegexRouteInfo(BotModuleBase module, MethodInfo route, Regex[] regexs, bool[] atRequired, Func<MessageSource, bool> pred) : base(module, route, pred)
         {
             this.regexs = regexs;
-            this.module = module;
             this.atRequired = atRequired;
 
             ParameterInfo[] parameters = route.GetParameters();
@@ -107,12 +103,13 @@ namespace Maila.Cocoa.Framework.Models.Route
                 }
                 else if (paraType.IsGenericType)
                 {
-                    BotModuleBase? sourceModule = module;
-                    Type? sourceModuleType = null;
+                    BotModuleBase sourceModule = module;
                     if (para.GetCustomAttribute<SharedFromAttribute>() is SharedFromAttribute sharedFrom)
                     {
-                        sourceModule = null;
-                        sourceModuleType = sharedFrom.Type;
+                        if (ModuleCore.Modules.FirstOrDefault(m => m.RealType == sharedFrom.Type) is BotModuleBase refModule)
+                        {
+                            sourceModule = refModule;
+                        }
                     }
 
                     Type typeDefinition = paraType.GetGenericTypeDefinition();
@@ -123,8 +120,7 @@ namespace Maila.Cocoa.Framework.Models.Route
                             0 + (para.GetCustomAttribute<MemoryOnlyAttribute>() is null ? 0 : 3),
                             $"{para.Name} {paraType.GenericTypeArguments[0].FullName!.CalculateCRC16():X}",
                             paraType.GenericTypeArguments[0],
-                            sourceModule,
-                            sourceModuleType
+                            sourceModule
                         ));
                     }
                     else if (typeDefinition == GroupAutoDataType)
@@ -134,8 +130,7 @@ namespace Maila.Cocoa.Framework.Models.Route
                             1 + (para.GetCustomAttribute<MemoryOnlyAttribute>() is null ? 0 : 3),
                             $"{para.Name} {paraType.GenericTypeArguments[0].FullName!.CalculateCRC16():X}",
                             paraType.GenericTypeArguments[0],
-                            sourceModule,
-                            sourceModuleType
+                            sourceModule
                         ));
                     }
                     else if (typeDefinition == SourceAutoDataType)
@@ -145,8 +140,7 @@ namespace Maila.Cocoa.Framework.Models.Route
                             2 + (para.GetCustomAttribute<MemoryOnlyAttribute>() is null ? 0 : 3),
                             $"{para.Name} {paraType.GenericTypeArguments[0].FullName!.CalculateCRC16():X}",
                             paraType.GenericTypeArguments[0],
-                            sourceModule,
-                            sourceModuleType
+                            sourceModule
                         ));
                     }
                 }
@@ -247,11 +241,6 @@ namespace Maila.Cocoa.Framework.Models.Route
             }
             foreach (var autoDataIndex in autoDataIndices)
             {
-                if (autoDataIndex.sourceModule == null)
-                {
-                    autoDataIndex.sourceModule = ModuleCore.Modules.FirstOrDefault(m => m.GetType() == autoDataIndex.sourceModuleType) ?? module;
-                }
-
                 args[autoDataIndex.argIndex] = autoDataIndex.bindingType switch
                 {
                     0 => autoDataIndex.sourceModule.GetUserAutoData(src, autoDataIndex.name, autoDataIndex.type),

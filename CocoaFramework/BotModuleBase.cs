@@ -37,6 +37,8 @@ namespace Maila.Cocoa.Framework
 
         internal readonly Func<MessageSource, bool> Pred;
 
+        internal Type RealType { get; }
+
         internal string TypeName { get; }
 
         private readonly List<RouteInfo> routes = new();
@@ -45,13 +47,13 @@ namespace Maila.Cocoa.Framework
 
         protected internal BotModuleBase()
         {
-            Type realType = GetType();
+            RealType = GetType();
 
             #region === Module Info ===
 
-            TypeName = realType.Name;
-            DataRoot = $"ModuleData/{TypeName}_{realType.FullName!.CalculateCRC16():X}/";
-            if (realType.GetCustomAttribute<BotModuleAttribute>() is { } moduleInfo)
+            TypeName = RealType.Name;
+            DataRoot = $"ModuleData/{TypeName}_{RealType.FullName!.CalculateCRC16():X}/";
+            if (RealType.GetCustomAttribute<BotModuleAttribute>() is { } moduleInfo)
             {
                 Name = moduleInfo.Name;
                 Priority = moduleInfo.Priority;
@@ -64,24 +66,24 @@ namespace Maila.Cocoa.Framework
 
             #region === Conditions ===
 
-            var reqs = realType.GetCustomAttributes<IdentityRequirementsAttribute>()
+            var reqs = RealType.GetCustomAttributes<IdentityRequirementsAttribute>()
                                .Select<IdentityRequirementsAttribute, Func<MessageSource, bool>>(r => src => r.Check(src.User.Identity, src.Permission))
                                .ToList();
             Pred = reqs.Any()
                 ? src => reqs.Any(p => p(src))
                 : src => true;
 
-            EnableInGroup = realType.GetCustomAttribute<DisableInGroupAttribute>() is null;
-            EnableInPrivate = realType.GetCustomAttribute<DisableInPrivateAttribute>() is null;
+            EnableInGroup = RealType.GetCustomAttribute<DisableInGroupAttribute>() is null;
+            EnableInPrivate = RealType.GetCustomAttribute<DisableInPrivateAttribute>() is null;
 
             #endregion
 
             #region === Method Info ===
 
-            InitOverrode = realType.GetMethod(nameof(Init), BindingFlags.Instance | BindingFlags.NonPublic)!.DeclaringType != BaseType;
-            DestroyOverrode = realType.GetMethod(nameof(Destroy), BindingFlags.Instance | BindingFlags.NonPublic)!.DeclaringType != BaseType;
+            InitOverrode = RealType.GetMethod(nameof(Init), BindingFlags.Instance | BindingFlags.NonPublic)!.DeclaringType != BaseType;
+            DestroyOverrode = RealType.GetMethod(nameof(Destroy), BindingFlags.Instance | BindingFlags.NonPublic)!.DeclaringType != BaseType;
 
-            MethodInfo onMessageInfo = realType.GetMethod(nameof(OnMessage), BindingFlags.Instance | BindingFlags.NonPublic)!;
+            MethodInfo onMessageInfo = RealType.GetMethod(nameof(OnMessage), BindingFlags.Instance | BindingFlags.NonPublic)!;
             OnMessageOverrode = onMessageInfo.DeclaringType != BaseType && onMessageInfo.GetCustomAttribute<DisabledAttribute>() is null;
             OnMessageThreadSafe = !OnMessageOverrode
                                 || onMessageInfo.GetCustomAttribute<ThreadSafeAttribute>() is not null
@@ -102,7 +104,7 @@ namespace Maila.Cocoa.Framework
                 onMessagePred = src => false;
             }
 
-            MethodInfo onMessageFinishedInfo = realType.GetMethod(nameof(OnMessageFinished), BindingFlags.Instance | BindingFlags.NonPublic)!;
+            MethodInfo onMessageFinishedInfo = RealType.GetMethod(nameof(OnMessageFinished), BindingFlags.Instance | BindingFlags.NonPublic)!;
             OnMessageFinishedOverrode = onMessageFinishedInfo.DeclaringType != BaseType && onMessageFinishedInfo.GetCustomAttribute<DisabledAttribute>() is null;
             OnMessageFinishedThreadSafe = !OnMessageFinishedOverrode
                                         || onMessageFinishedInfo.GetCustomAttribute<ThreadSafeAttribute>() is not null
@@ -114,7 +116,7 @@ namespace Maila.Cocoa.Framework
 
             #region === Data Hosting ===
 
-            foreach (var field in realType
+            foreach (var field in RealType
                 .GetFields(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
                 .Where(f => f.GetCustomAttribute<HostingAttribute>() is not null
                          && f.GetCustomAttribute<DisabledAttribute>() is null
@@ -142,7 +144,7 @@ namespace Maila.Cocoa.Framework
 
             #region === Route ===
 
-            MethodInfo[] methods = realType.GetMethods();
+            MethodInfo[] methods = RealType.GetMethods();
             foreach (var method in methods)
             {
                 if (method.GetCustomAttribute<DisabledAttribute>() is not null)

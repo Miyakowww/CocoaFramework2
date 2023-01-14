@@ -27,7 +27,7 @@ namespace Maila.Cocoa.Framework
 
             Id = sm.Id;
             Time = DateTimeOffset.FromUnixTimeSeconds(sm.Time).LocalDateTime;
-            Chain = ImmutableArray.Create(chain[1..]);
+            Chain = ImmutableArray.Create(chain, 1, chain.Length - 1);
             PlainText = string.Concat(chain.Select(m => (m as PlainMessage)?.Text));
         }
 
