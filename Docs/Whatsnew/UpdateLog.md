@@ -1,5 +1,13 @@
 <h1 align="center">更新日志</h1>
 
+# **2.1.8.1**
+*released January 14, 2023*
+
+## 优化
+- 性能优化
+
+<br>
+
 # **2.1.8**
 *released December 25, 2022*
 
