@@ -307,8 +307,7 @@ namespace Maila.Cocoa.Framework.Support
 
         #region === Media API ===
 
-        /// <summary>Upload image files to the server.</summary>
-        /// <returns>IImageMessage</returns>
+        /// <summary>Upload the image file to the server.</summary>
         /// <exception cref="MiraiException" />
         /// <exception cref="NotConnectedException" />
         /// <exception cref="WebException" />
@@ -319,9 +318,9 @@ namespace Maila.Cocoa.Framework.Support
                 : throw new NotConnectedException();
         }
 
-        /// <summary>Upload image files to the server.</summary>
-        /// <returns>IImageMessage</returns>
+        /// <summary>Upload the image file to the server.</summary>
         /// <exception cref="MiraiException" />
+        /// <exception cref="NotConnectedException" />
         /// <exception cref="WebException" />
         public static async Task<IImageMessage> UploadImage(UploadType type, string path)
         {
@@ -329,8 +328,7 @@ namespace Maila.Cocoa.Framework.Support
             return await UploadImage(type, fs);
         }
 
-        /// <summary>Upload voice files to the server.</summary>
-        /// <returns>IVoiceMessage</returns>
+        /// <summary>Upload the voice file to the server.</summary>
         /// <exception cref="MiraiException" />
         /// <exception cref="NotConnectedException" />
         /// <exception cref="WebException" />
@@ -341,9 +339,10 @@ namespace Maila.Cocoa.Framework.Support
                 : throw new NotConnectedException();
         }
 
-        /// <summary>Upload voice files to the server.</summary>
+        /// <summary>Upload the voice file to the server.</summary>
         /// <returns>IVoiceMessage</returns>
         /// <exception cref="MiraiException" />
+        /// <exception cref="NotConnectedException" />
         /// <exception cref="WebException" />
         public static async Task<IVoiceMessage> UploadVoice(string path)
         {
@@ -351,8 +350,8 @@ namespace Maila.Cocoa.Framework.Support
             return await UploadVoice(fs);
         }
 
-        /// <summary>Upload files to group.</summary>
-        /// <returns>FileId</returns>
+        /// <summary>Upload the file to a group.</summary>
+        /// <returns>File id</returns>
         /// <exception cref="MiraiException" />
         /// <exception cref="NotConnectedException" />
         /// <exception cref="WebException" />
@@ -363,8 +362,8 @@ namespace Maila.Cocoa.Framework.Support
                 : throw new NotConnectedException();
         }
 
-        /// <summary>Upload files to group.</summary>
-        /// <returns>FileId</returns>
+        /// <summary>Upload the file to a group.</summary>
+        /// <returns>File id</returns>
         /// <exception cref="MiraiException" />
         /// <exception cref="WebException" />
         public static async Task<string> UploadFileAndSend(long groupId, string targetPath, string filePath)
@@ -377,8 +376,7 @@ namespace Maila.Cocoa.Framework.Support
 
         #region === Member API ===
 
-        /// <summary>Get friend list.</summary>
-        /// <returns>Friend List</returns>
+        /// <summary>Get friends.</summary>
         /// <exception cref="MiraiException" />
         /// <exception cref="NotConnectedException" />
         /// <exception cref="WebException" />
@@ -389,8 +387,7 @@ namespace Maila.Cocoa.Framework.Support
                 : throw new NotConnectedException();
         }
 
-        /// <summary>Get group list.</summary>
-        /// <returns>Group List</returns>
+        /// <summary>Get groups.</summary>
         /// <exception cref="MiraiException" />
         /// <exception cref="NotConnectedException" />
         /// <exception cref="WebException" />
@@ -401,8 +398,7 @@ namespace Maila.Cocoa.Framework.Support
                 : throw new NotConnectedException();
         }
 
-        /// <summary>Get member list of the specified group.</summary>
-        /// <returns>Group Member List</returns>
+        /// <summary>Get members in the specified group.</summary>
         /// <exception cref="MiraiException" />
         /// <exception cref="NotConnectedException" />
         /// <exception cref="WebException" />
@@ -467,7 +463,8 @@ namespace Maila.Cocoa.Framework.Support
             throw new MiraiException(5);
         }
 
-        /// <summary>Send message to private chat.</summary>
+        /// <summary>Send a message to private chat.</summary>
+        /// <returns>Message id</returns>
         /// <exception cref="MiraiException" />
         /// <exception cref="WebException" />
         public static Task<int> SendPrivateMessage(long qqId, string message)
@@ -475,7 +472,8 @@ namespace Maila.Cocoa.Framework.Support
             return SendPrivateMessage(qqId, new PlainMessage(message));
         }
 
-        /// <summary>Send message to private chat.</summary>
+        /// <summary>Send a message to private chat.</summary>
+        /// <returns>Message id</returns>
         /// <exception cref="MiraiException" />
         /// <exception cref="WebException" />
         public static Task<int> SendPrivateMessage(long qqId, params IMessage[] chain)
@@ -483,7 +481,8 @@ namespace Maila.Cocoa.Framework.Support
             return CommonSendMessage(qqId, false, chain, null, null);
         }
 
-        /// <summary>Send reply message to private chat.</summary>
+        /// <summary>Send a reply message to private chat.</summary>
+        /// <returns>Message id</returns>
         /// <exception cref="MiraiException" />
         /// <exception cref="WebException" />
         public static Task<int> SendPrivateMessage(int? quote, long qqId, string message)
@@ -491,7 +490,8 @@ namespace Maila.Cocoa.Framework.Support
             return SendPrivateMessage(quote, qqId, new PlainMessage(message));
         }
 
-        /// <summary>Send reply message to private chat.</summary>
+        /// <summary>Send a reply message to private chat.</summary>
+        /// <returns>Message id</returns>
         /// <exception cref="MiraiException" />
         /// <exception cref="WebException" />
         public static Task<int> SendPrivateMessage(int? quote, long qqId, params IMessage[] chain)
@@ -499,7 +499,8 @@ namespace Maila.Cocoa.Framework.Support
             return CommonSendMessage(qqId, false, chain, quote, null);
         }
 
-        /// <summary>Send message to group.</summary>
+        /// <summary>Send a message to a group.</summary>
+        /// <returns>Message id</returns>
         /// <exception cref="MiraiException" />
         /// <exception cref="WebException" />
         public static Task<int> SendGroupMessage(long groupId, string message)
@@ -507,7 +508,8 @@ namespace Maila.Cocoa.Framework.Support
             return SendGroupMessage(groupId, new PlainMessage(message));
         }
 
-        /// <summary>Send reply message to group.</summary>
+        /// <summary>Send a reply message to a group.</summary>
+        /// <returns>Message id</returns>
         /// <exception cref="MiraiException" />
         /// <exception cref="WebException" />
         public static Task<int> SendGroupMessage(int? quote, long groupId, string message)
@@ -515,8 +517,8 @@ namespace Maila.Cocoa.Framework.Support
             return SendGroupMessage(quote, groupId, new PlainMessage(message));
         }
 
-        /// <summary>Send message to friend.</summary>
-        /// <returns>MessageID</returns>
+        /// <summary>Send a message to a friend.</summary>
+        /// <returns>Message id</returns>
         /// <exception cref="MiraiException" />
         /// <exception cref="NotConnectedException" />
         /// <exception cref="WebException" />
@@ -525,8 +527,8 @@ namespace Maila.Cocoa.Framework.Support
             return CommonSendMessage(qqId, false, chain, null, null);
         }
 
-        /// <summary>Send reply message to friend.</summary>
-        /// <returns>MessageID</returns>
+        /// <summary>Send a reply message to a friend.</summary>
+        /// <returns>Message id</returns>
         /// <exception cref="MiraiException" />
         /// <exception cref="NotConnectedException" />
         /// <exception cref="WebException" />
@@ -535,8 +537,8 @@ namespace Maila.Cocoa.Framework.Support
             return CommonSendMessage(qqId, false, chain, quote, null);
         }
 
-        /// <summary>Send message to group member.</summary>
-        /// <returns>MessageID</returns>
+        /// <summary>Send a message to a group member.</summary>
+        /// <returns>Message id</returns>
         /// <exception cref="MiraiException" />
         /// <exception cref="NotConnectedException" />
         /// <exception cref="WebException" />
@@ -545,8 +547,8 @@ namespace Maila.Cocoa.Framework.Support
             return CommonSendMessage(qqId, false, chain, null, groupId);
         }
 
-        /// <summary>Send reply message to group member.</summary>
-        /// <returns>MessageID</returns>
+        /// <summary>Send a reply message to a group member.</summary>
+        /// <returns>Message id</returns>
         /// <exception cref="MiraiException" />
         /// <exception cref="NotConnectedException" />
         /// <exception cref="WebException" />
@@ -555,8 +557,8 @@ namespace Maila.Cocoa.Framework.Support
             return CommonSendMessage(qqId, false, chain, quote, groupId);
         }
 
-        /// <summary>Send message to group.</summary>
-        /// <returns>MessageID</returns>
+        /// <summary>Send a message to a group.</summary>
+        /// <returns>Message id</returns>
         /// <exception cref="MiraiException" />
         /// <exception cref="NotConnectedException" />
         /// <exception cref="WebException" />
@@ -565,8 +567,8 @@ namespace Maila.Cocoa.Framework.Support
             return CommonSendMessage(groupId, true, chain, null, null);
         }
 
-        /// <summary>Send reply message to group.</summary>
-        /// <returns>MessageID</returns>
+        /// <summary>Send a reply message to a group.</summary>
+        /// <returns>Message id</returns>
         /// <exception cref="MiraiException" />
         /// <exception cref="NotConnectedException" />
         /// <exception cref="WebException" />
@@ -575,7 +577,7 @@ namespace Maila.Cocoa.Framework.Support
             return CommonSendMessage(groupId, true, chain, quote, null);
         }
 
-        /// <summary>Recall message.</summary>
+        /// <summary>Recall a message.</summary>
         /// <exception cref="MiraiException" />
         /// <exception cref="NotConnectedException" />
         /// <exception cref="WebException" />
@@ -590,7 +592,7 @@ namespace Maila.Cocoa.Framework.Support
 
         #region === Nudge API ===
 
-        /// <summary>Send nudge to private chat.</summary>
+        /// <summary>Send a nudge to private chat.</summary>
         /// <exception cref="MiraiException" />
         /// <exception cref="NotConnectedException" />
         /// <exception cref="WebException" />
@@ -601,7 +603,7 @@ namespace Maila.Cocoa.Framework.Support
                 : throw new NotConnectedException();
         }
 
-        /// <summary>Send nudge to group.</summary>
+        /// <summary>Send a nudge to a group.</summary>
         /// <exception cref="MiraiException" />
         /// <exception cref="NotConnectedException" />
         /// <exception cref="WebException" />
@@ -616,7 +618,7 @@ namespace Maila.Cocoa.Framework.Support
 
         #region === Resp API ===
 
-        /// <summary>Handle new friend request.</summary>
+        /// <summary>Handle new friend requests.</summary>
         /// <exception cref="MiraiException" />
         /// <exception cref="NotConnectedException" />
         /// <exception cref="WebException" />
@@ -627,7 +629,7 @@ namespace Maila.Cocoa.Framework.Support
                 : throw new NotConnectedException();
         }
 
-        /// <summary>Handle new friend request.</summary>
+        /// <summary>Handle new friend requests.</summary>
         /// <exception cref="MiraiException" />
         /// <exception cref="NotConnectedException" />
         /// <exception cref="WebException" />
@@ -638,7 +640,7 @@ namespace Maila.Cocoa.Framework.Support
                 : throw new NotConnectedException();
         }
 
-        /// <summary>Handle others join group request.</summary>
+        /// <summary>Handle join group requests.</summary>
         /// <exception cref="MiraiException" />
         /// <exception cref="NotConnectedException" />
         /// <exception cref="WebException" />
@@ -649,7 +651,7 @@ namespace Maila.Cocoa.Framework.Support
                 : throw new NotConnectedException();
         }
 
-        /// <summary>Handle others join group request.</summary>
+        /// <summary>Handle join group requests.</summary>
         /// <exception cref="MiraiException" />
         /// <exception cref="NotConnectedException" />
         /// <exception cref="WebException" />
@@ -660,7 +662,7 @@ namespace Maila.Cocoa.Framework.Support
                 : throw new NotConnectedException();
         }
 
-        /// <summary>Handle group invitation request.</summary>
+        /// <summary>Handle another invite bot to join group requests.</summary>
         /// <exception cref="MiraiException" />
         /// <exception cref="NotConnectedException" />
         /// <exception cref="WebException" />
@@ -671,7 +673,7 @@ namespace Maila.Cocoa.Framework.Support
                 : throw new NotConnectedException();
         }
 
-        /// <summary>Handle group invitation request.</summary>
+        /// <summary>Handle another invite bot to join group requests.</summary>
         /// <exception cref="MiraiException" />
         /// <exception cref="NotConnectedException" />
         /// <exception cref="WebException" />

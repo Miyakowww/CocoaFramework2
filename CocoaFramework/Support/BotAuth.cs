@@ -25,43 +25,43 @@ namespace Maila.Cocoa.Framework.Support
         }
 
         /// <summary>
-        /// Get user's identity.
+        /// Get the user's identity.
         /// </summary>
         public static UserIdentity GetIdentity(long qqId)
             => identities.GetValueOrDefault(qqId, UserIdentity.User);
 
         /// <summary>
-        /// Get all user's identity.
+        /// Get all user's identities.
         /// </summary>
         public static KeyValuePair<long, UserIdentity>[] GetStoredIdentity()
             => identities.ToArray();
 
         /// <summary>
-        /// Get all filtered user's identity.
+        /// Get all filtered user's identities.
         /// </summary>
         public static KeyValuePair<long, UserIdentity>[] GetStoredIdentity(UserIdentity filter)
             => identities.Where(p => p.Value.Fit(filter)).ToArray();
 
         /// <summary>
-        /// Set user's identity.
+        /// Set the user's identity.
         /// </summary>
         public static void SetIdentity(long qqId, UserIdentity identity)
             => identities[qqId] = identity;
 
         /// <summary>
-        /// Append specified identity to the user
+        /// Append specified identity to the user.
         /// </summary>
         public static UserIdentity AddIdentity(long qqId, UserIdentity identity)
             => identities[qqId] = identities.GetValueOrDefault(qqId, UserIdentity.User) | identity;
 
         /// <summary>
-        /// Remove specified identity
+        /// Remove specified identity.
         /// </summary>
         public static UserIdentity RemoveIdentity(long qqId, UserIdentity identity)
             => identities[qqId] = identities.GetValueOrDefault(qqId, UserIdentity.User) & ~identity;
 
         /// <summary>
-        /// Set user's identity to User
+        /// Set the user's identity to <see cref="UserIdentity.User"/>.
         /// </summary>
         public static bool ClearIdentity(long qqId)
         {

@@ -23,8 +23,7 @@ namespace Maila.Cocoa.Framework.Core
         internal static string verifyKey = string.Empty;
 
         private static readonly SemaphoreSlim connLock = new(1);
-
-        /// <summary>Test the connection to the server.</summary>
+        
         public static async Task<bool> TestNetwork()
             => host is not null && await MiraiAPI.About(host) is not null;
 

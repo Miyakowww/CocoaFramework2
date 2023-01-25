@@ -68,13 +68,13 @@ namespace Maila.Cocoa.Framework.Core
         {
             for (int i = messageLocks.Count - 1; i >= 0; i--)
             {
-                var state = messageLocks[i](src, msg);
-                if ((state & LockState.ContinueAndRemove) != 0) // Whether remove
+                var state = (InternalLockState)messageLocks[i](src, msg);
+                if (state.HasFlag(InternalLockState.Remove))
                 {
                     messageLocks.RemoveAt(i);
                 }
 
-                if ((state & LockState.NotFinished) != 0) // Whether end execution
+                if (state.HasFlag(InternalLockState.Processed))
                 {
                     OnMessageFinished(src, msg, origSrc, origMsg, true, null);
                     return;

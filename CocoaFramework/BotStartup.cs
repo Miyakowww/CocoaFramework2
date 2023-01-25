@@ -21,7 +21,7 @@ namespace Maila.Cocoa.Framework
         public static Task Disconnect()
             => BotCore.Disconnect();
 
-        /// <summary>Connect to the server.</summary>
+        /// <summary>Connect to the server, and automatically release the existing connection if it exists.</summary>
         public static Task<bool> ConnectAndInit(BotStartupConfig config)
             => BotCore.ConnectAndInit(config);
 
@@ -29,7 +29,7 @@ namespace Maila.Cocoa.Framework
         public static Task DisconnectAndSaveData()
             => BotCore.DisconnectAndSaveData();
 
-        /// <summary>Release current session and connect to a new session.</summary>
+        /// <summary>Reconnect to the server without releasing resources.</summary>
         public static Task Reconnect()
             => BotCore.Reconnect();
     }

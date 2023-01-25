@@ -65,7 +65,7 @@ namespace Maila.Cocoa.Framework.Core
                     try
                     {
                         await Task.Delay(this.timeout, token);
-                        // Make time gap with timeout judgment to avoid boundary problems
+                        // Make a time gap with timeout judgment to avoid boundary problems
                         await Task.Delay(10, token);
                     }
                     catch (TaskCanceledException) { return; }
@@ -94,15 +94,15 @@ namespace Maila.Cocoa.Framework.Core
 
                 runningLock.Wait();
 
-                var state = run(src, msg);
+                var state = (InternalLockState)run(src, msg);
                 if (timeout > TimeSpan.Zero)
                 {
-                    if ((state & LockState.ContinueAndRemove) != 0) // Whether remove
+                    if (state.HasFlag(InternalLockState.Remove))
                     {
                         counter++;
                         lastToken.Cancel();
                     }
-                    else if (state == LockState.NotFinished)
+                    else if (state == InternalLockState.Processed)
                     {
                         lastRun = DateTime.Now;
                         counter++;
@@ -114,17 +114,23 @@ namespace Maila.Cocoa.Framework.Core
                 }
 
                 runningLock.Release();
-                return state;
+                return (LockState)state;
             }
         }
     }
 
-    [Flags]
     public enum LockState
     {
         Finished = 0b11,
         NotFinished = 0b01,
         Continue = 0b00,
-        ContinueAndRemove = 0b10
+        ContinueAndRemove = 0b10,
+    }
+
+    [Flags]
+    internal enum InternalLockState
+    {
+        Processed = 0b01,
+        Remove = 0b10,
     }
 }
