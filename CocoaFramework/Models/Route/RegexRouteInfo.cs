@@ -62,7 +62,7 @@ namespace Maila.Cocoa.Framework.Models.Route
             return -1;
         }
 
-        public RegexRouteInfo(BotModuleBase module, MethodInfo route, Regex[] regexs, bool[] atRequired, Func<MessageSource, bool> pred) : base(module, route, pred)
+        public RegexRouteInfo(BotModuleBase module, MethodInfo route, Regex[] regexs, bool[] atRequired) : base(module, route)
         {
             this.regexs = regexs;
             this.atRequired = atRequired;

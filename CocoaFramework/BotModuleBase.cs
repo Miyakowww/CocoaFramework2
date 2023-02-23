@@ -35,7 +35,7 @@ namespace Maila.Cocoa.Framework
             }
         }
 
-        internal readonly Func<MessageSource, bool> Pred;
+        private readonly Predicate<MessageSource> identityPred;
 
         internal Type RealType { get; }
 
@@ -66,11 +66,11 @@ namespace Maila.Cocoa.Framework
 
             #region === Conditions ===
 
-            var reqs = RealType.GetCustomAttributes<IdentityRequirementsAttribute>()
-                               .Select<IdentityRequirementsAttribute, Func<MessageSource, bool>>(r => src => r.Check(src.User.Identity, src.Permission))
+            var identityReqs = RealType.GetCustomAttributes<IdentityRequirementsAttribute>()
+                               .Select<IdentityRequirementsAttribute, Predicate<MessageSource>>(r => src => r.Check(src.User.Identity, src.Permission))
                                .ToList();
-            Pred = reqs.Any()
-                ? src => reqs.Any(p => p(src))
+            identityPred = identityReqs.Any()
+                ? src => identityReqs.Any(p => p(src))
                 : src => true;
 
             EnableInGroup = RealType.GetCustomAttribute<DisableInGroupAttribute>() is null;
@@ -93,7 +93,7 @@ namespace Maila.Cocoa.Framework
             if (OnMessageOverrode)
             {
                 var mreqs = onMessageInfo.GetCustomAttributes<IdentityRequirementsAttribute>()
-                                         .Select<IdentityRequirementsAttribute, Func<MessageSource, bool>>(r => src => r.Check(src.User.Identity, src.Permission))
+                                         .Select<IdentityRequirementsAttribute, Predicate<MessageSource>>(r => src => r.Check(src.User.Identity, src.Permission))
                                          .ToList();
                 onMessagePred = mreqs.Any()
                     ? src => mreqs.Any(p => p(src))
@@ -154,27 +154,17 @@ namespace Maila.Cocoa.Framework
 
                 if (method.GetCustomAttributes<TextRouteAttribute>().ToArray() is { Length: > 0 } textRouteInfos)
                 {
-                    var rreqs = method.GetCustomAttributes<IdentityRequirementsAttribute>()
-                                      .Select<IdentityRequirementsAttribute, Func<MessageSource, bool>>(r => src => r.Check(src.User.Identity, src.Permission))
-                                      .ToList();
                     string[] texts = textRouteInfos.Select(t => t.Text).ToArray();
                     bool[] ignoreCases = textRouteInfos.Select(t => t.IgnoreCase).ToArray();
                     bool[] atRequireds = textRouteInfos.Select(t => t.AtRequired).ToArray();
-                    routes.Add(new TextRouteInfo(this, method, texts, ignoreCases, atRequireds, rreqs.Any()
-                                                                                                    ? src => rreqs.Any(p => p(src))
-                                                                                                    : src => true));
+                    routes.Add(new TextRouteInfo(this, method, texts, ignoreCases, atRequireds));
                 }
 
                 if (method.GetCustomAttributes<RegexRouteAttribute>().ToArray() is { Length: > 0 } regexRouteInfos)
                 {
-                    var rreqs = method.GetCustomAttributes<IdentityRequirementsAttribute>()
-                                      .Select<IdentityRequirementsAttribute, Func<MessageSource, bool>>(r => src => r.Check(src.User.Identity, src.Permission))
-                                      .ToList();
                     Regex[] regexs = regexRouteInfos.Select(r => r.Regex).ToArray();
                     bool[] atRequireds = regexRouteInfos.Select(r => r.AtRequired).ToArray();
-                    routes.Add(new RegexRouteInfo(this, method, regexs, atRequireds, rreqs.Any()
-                                                                                         ? src => rreqs.Any(p => p(src))
-                                                                                         : src => true));
+                    routes.Add(new RegexRouteInfo(this, method, regexs, atRequireds));
                 }
             }
 
@@ -189,7 +179,7 @@ namespace Maila.Cocoa.Framework
         internal bool DestroyOverrode { get; }
         protected internal virtual void Destroy() { }
 
-        private readonly Func<MessageSource, bool> onMessagePred;
+        private readonly Predicate<MessageSource> onMessagePred;
         internal bool OnMessageOverrode { get; }
         internal bool OnMessageThreadSafe { get; }
         internal bool OnMessageEnableInGroup { get; }
@@ -201,6 +191,11 @@ namespace Maila.Cocoa.Framework
         }
         internal bool OnMessageInternal(MessageSource src, QMessage msg)
         {
+            if (!identityPred(src))
+            {
+                return false;
+            }
+
             if (routes.Any(route => route.Run(src, msg)))
             {
                 return true;

@@ -81,9 +81,7 @@ namespace Maila.Cocoa.Framework.Core
                 }
             }
 
-            foreach (var module in Modules.Where(m => m.Enabled
-                                                   && m.Pred(src)
-                                                   && (src.IsGroup ? m.EnableInGroup : m.EnableInPrivate)))
+            foreach (var module in Modules.Where(m => m.Enabled && (src.IsGroup ? m.EnableInGroup : m.EnableInPrivate)))
             {
                 try
                 {

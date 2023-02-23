@@ -2,6 +2,7 @@
 // Licensed under the GNU AGPLv3
 
 using System;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
@@ -15,7 +16,7 @@ namespace Maila.Cocoa.Framework.Models.Route
 
         private readonly RouteResultProcessor? processor;
 
-        private readonly Func<MessageSource, bool> pred;
+        private readonly Predicate<MessageSource> identityPred;
 
         private readonly bool groupAvailable;
         private readonly bool privateAvailable;
@@ -30,11 +31,17 @@ namespace Maila.Cocoa.Framework.Models.Route
         protected static readonly Type GroupAutoDataType = typeof(GroupAutoData<>);
         protected static readonly Type SourceAutoDataType = typeof(SourceAutoData<>);
 
-        public RouteInfo(BotModuleBase module, MethodInfo route, Func<MessageSource, bool> pred)
+        public RouteInfo(BotModuleBase module, MethodInfo route)
         {
             this.module = module;
             this.route = route;
-            this.pred = pred;
+
+            var identityReqs = route.GetCustomAttributes<IdentityRequirementsAttribute>()
+                              .Select<IdentityRequirementsAttribute, Predicate<MessageSource>>(r => src => r.Check(src.User.Identity, src.Permission))
+                              .ToList();
+            identityPred = identityReqs.Any()
+                ? src => identityReqs.Any(p => p(src))
+                : src => true;
 
             isThreadSafe = route.GetCustomAttribute<ThreadSafeAttribute>() is not null
                         || route.GetCustomAttribute<AsyncStateMachineAttribute>() is not null;
@@ -58,7 +65,8 @@ namespace Maila.Cocoa.Framework.Models.Route
             {
                 return false;
             }
-            if (!pred(src))
+
+            if (!identityPred(src))
             {
                 return false;
             }

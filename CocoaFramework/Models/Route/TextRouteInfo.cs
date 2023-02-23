@@ -42,7 +42,7 @@ namespace Maila.Cocoa.Framework.Models.Route
             }
         }
 
-        public TextRouteInfo(BotModuleBase module, MethodInfo route, string[] texts, bool[] ignoreCases, bool[] atRequired, Func<MessageSource, bool> pred) : base(module, route, pred)
+        public TextRouteInfo(BotModuleBase module, MethodInfo route, string[] texts, bool[] ignoreCases, bool[] atRequired) : base(module, route)
         {
             this.texts = texts;
             this.ignoreCases = ignoreCases;
