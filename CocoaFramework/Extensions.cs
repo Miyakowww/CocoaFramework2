@@ -34,26 +34,6 @@ namespace Maila.Cocoa.Framework
 
         #endregion
 
-        #region === Concurrent Dictionary ===
-
-        internal static TValue Exchange<TKey, TValue>(
-            this ConcurrentDictionary<TKey, TValue> dict,
-            TKey name,
-            TValue addValue,
-            TValue defaultValue)
-            where TKey : notnull
-        {
-            dict.AddOrUpdate(name, addValue, (_, savedValue) =>
-            {
-                defaultValue = savedValue;
-                return addValue;
-            });
-
-            return defaultValue;
-        }
-
-        #endregion
-
         internal static ushort CalculateCRC16(this string str)
         {
             if (string.IsNullOrEmpty(str))

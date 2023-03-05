@@ -12,47 +12,66 @@ namespace Maila.Cocoa.Framework.Support
 {
     public static class DataManager
     {
-        private static readonly ConcurrentDictionary<string, bool> needSave = new();
-        private static readonly ConcurrentDictionary<string, bool> savingStatus = new();
-        private static int savingCount;
+        public static readonly string DataRoot = "data/";
 
-        internal static bool SavingData => savingCount > 0;
+        internal static bool SavingData => !savingStatus.IsEmpty;
 
-        public static readonly string DataRoot = AppDomain.CurrentDomain.BaseDirectory + "/data/";
+        private static readonly ConcurrentDictionary<string, (bool valueUpdated, object? value)> savingStatus = new();
+        private static readonly ConcurrentDictionary<string, SemaphoreSlim> savingStatusLock = new();
 
-        public static async void SaveData(string name, object? obj)
+        public static async void SaveData(string name, object? obj, bool indented = true)
         {
-            if (obj is null)
+            var statusLock = savingStatusLock.GetOrAdd(name, _ => new(1));
+            await statusLock.WaitAsync();
+
+            if (savingStatus.TryGetValue(name, out var status))
             {
+                savingStatus[name] = (true, obj);
+                statusLock.Release();
+                return;
+            }
+            else
+            {
+                savingStatus[name] = (false, null);
+            }
+
+            statusLock.Release();
+
+            var path = $"{DataRoot}{name}.json";
+            var directory = Path.GetDirectoryName(path);
+            if (directory == null)
+            {
+                // Error: bad save path
+                savingStatus.TryRemove(name, out _);
                 return;
             }
 
-            if (savingStatus.Exchange(name, true, false))
+            if (!Directory.Exists(directory))
             {
-                return;
+                Directory.CreateDirectory(directory);
             }
 
-            Interlocked.Increment(ref savingCount);
+            var formatting = indented ? Formatting.Indented : Formatting.None;
+            await File.WriteAllTextAsync(path, JsonConvert.SerializeObject(obj, formatting));
 
-            string path = $"{DataRoot}{name}.json";
-            if (!Directory.Exists(Path.GetDirectoryName(path)))
+            await statusLock.WaitAsync();
+            while (savingStatus.TryGetValue(name, out status) && status.valueUpdated)
             {
-                Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+                savingStatus[name] = (false, null);
+                statusLock.Release();
+
+                await File.WriteAllTextAsync(path, JsonConvert.SerializeObject(status.value, formatting));
+
+                await statusLock.WaitAsync();
             }
 
-            await File.WriteAllTextAsync(path, JsonConvert.SerializeObject(obj, Formatting.Indented));
-            while (needSave.Exchange(name, false, false))
-            {
-                await File.WriteAllTextAsync(path, JsonConvert.SerializeObject(obj, Formatting.Indented));
-            }
-
-            savingStatus[name] = false;
-            Interlocked.Decrement(ref savingCount);
+            savingStatus.TryRemove(name, out _);
+            statusLock.Release();
         }
 
         public static async Task<T?> LoadData<T>(string name)
         {
-            while (needSave.GetOrAdd(name, false) || savingStatus.GetOrAdd(name, false))
+            while (savingStatus.ContainsKey(name))
             {
                 await Task.Delay(10);
             }
@@ -64,14 +83,14 @@ namespace Maila.Cocoa.Framework.Support
 
         public static async Task<object?> LoadData(string name, Type type)
         {
-            while (needSave.GetOrAdd(name, false) || savingStatus.GetOrAdd(name, false))
+            while (savingStatus.ContainsKey(name))
             {
                 await Task.Delay(10);
             }
 
             return File.Exists($"{DataRoot}{name}.json")
                 ? JsonConvert.DeserializeObject(await File.ReadAllTextAsync($"{DataRoot}{name}.json"), type)
-                : default;
+                : null;
         }
     }
 }

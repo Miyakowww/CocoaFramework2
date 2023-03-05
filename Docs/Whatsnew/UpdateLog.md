@@ -1,5 +1,13 @@
 <h1 align="center">更新日志</h1>
 
+# **2.1.8.2**
+*released March 5, 2023*
+
+## 修复
+- 修复 DataManager 有时不会保存数据的问题
+
+<br>
+
 # **2.1.8.1**
 *released January 14, 2023*
 
