@@ -32,7 +32,7 @@
   - 如果为 bool 类型表示消息是否被处理
   - 如果为 string、StringBuilder 或 MessageBuilder 类型且不为空将自动向来源发送对应文本，否则表示消息未被处理
   - 如果为 IEnumerator 或 IEnumerable 会被自动添加为 [Meeting](./Meeting.md)
-  - 如果为 Task\<string、StringBuilder 或 MessageBuilder>，则调用时消息会被立即标记为处理。Task 完成后会自动向来源发送对应文本
+  - 如果为 Task，则调用时消息会被立即标记为处理。如果 Task 存在返回值，返回值会在 Task 完成后按照其余规则进行处理
   - 如果为其他值类型，返回结果不为默认值将代表消息被处理
   - 如果为其他引用类型，返回结果不为 null 将代表消息被处理
 

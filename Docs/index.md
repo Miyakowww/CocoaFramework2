@@ -26,6 +26,7 @@
 ## 用户手册
 - [Cocoa Framework API](./Manual/API.md)
 - [路由](./Manual/Route.md)
+- [自定义路由](./Manual/CustomRoute.md)
 - [AutoData](./Manual/AutoData.md)
 - [Meeting](./Manual/Meeting.md)
 - [AsyncMeeting](./Manual/AsyncMeeting.md)

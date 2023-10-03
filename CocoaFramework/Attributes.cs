@@ -2,8 +2,11 @@
 // Licensed under the GNU AGPLv3
 
 using System;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using Maila.Cocoa.Beans.Models;
+using Maila.Cocoa.Framework.Models.Route;
+using Maila.Cocoa.Framework.Models.Route.BuiltIn;
 
 namespace Maila.Cocoa.Framework
 {
@@ -85,7 +88,12 @@ namespace Maila.Cocoa.Framework
     #region === Route ===
 
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
-    public sealed class RegexRouteAttribute : Attribute
+    public abstract class RouteAttribute : Attribute
+    {
+        public abstract RouteInfo GetRouteInfo(BotModuleBase module, MethodInfo route);
+    }
+
+    public sealed class RegexRouteAttribute : RouteAttribute
     {
         public Regex Regex { get; }
         public bool AtRequired { get; set; } = false;
@@ -99,10 +107,14 @@ namespace Maila.Cocoa.Framework
         {
             Regex = new(pattern, options | RegexOptions.Compiled);
         }
+
+        public override RouteInfo GetRouteInfo(BotModuleBase module, MethodInfo route)
+        {
+            return new RegexRoute(module, route, Regex, AtRequired);
+        }
     }
 
-    [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
-    public sealed class TextRouteAttribute : Attribute
+    public sealed class TextRouteAttribute : RouteAttribute
     {
         public string Text { get; }
         public bool IgnoreCase { get; set; } = true;
@@ -112,18 +124,21 @@ namespace Maila.Cocoa.Framework
         {
             Text = text;
         }
+
+        public override RouteInfo GetRouteInfo(BotModuleBase module, MethodInfo route)
+        {
+            return new TextRoute(module, route, Text, IgnoreCase, AtRequired);
+        }
     }
 
     [AttributeUsage(AttributeTargets.Parameter)]
     public sealed class GroupNameAttribute : Attribute
     {
         public string Name { get; }
-        public string? Default { get; }
 
-        public GroupNameAttribute(string name, string? @default = null)
+        public GroupNameAttribute(string name)
         {
             Name = name;
-            Default = @default;
         }
     }
 

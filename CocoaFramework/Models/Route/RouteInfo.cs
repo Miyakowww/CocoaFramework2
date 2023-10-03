@@ -1,126 +1,111 @@
 ﻿// Copyright (c) Maila. All rights reserved.
 // Licensed under the GNU AGPLv3
 
-using System;
-using System.Linq;
 using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
+using System.Threading;
 
 namespace Maila.Cocoa.Framework.Models.Route
 {
-    internal abstract class RouteInfo
+    public abstract class RouteInfo
     {
-        private readonly BotModuleBase module;
-        private readonly MethodInfo route;
+        protected readonly BotModuleBase module;
+        protected readonly MethodInfo route;
+        protected readonly ParameterInfo[] parameters;
 
-        private readonly RouteResultProcessor? processor;
+        internal SemaphoreSlim? processLock;
 
-        private readonly Predicate<MessageSource> identityPred;
+        private readonly RouteResultProcessor.Processor resultProcessor;
 
-        private readonly bool groupAvailable;
-        private readonly bool privateAvailable;
+        private readonly int srcIndex = -1;
+        private readonly int msgIndex = -1;
+        private readonly int meetingIndex = -1;
 
-        private readonly bool isValueType;
-        private readonly bool isVoid;
-        private readonly bool isThreadSafe;
+        private readonly bool disabledInGroup;
+        private readonly bool disabledInPrivate;
 
-        private readonly object _lock = new();
-
-        protected static readonly Type UserAutoDataType = typeof(UserAutoData<>);
-        protected static readonly Type GroupAutoDataType = typeof(GroupAutoData<>);
-        protected static readonly Type SourceAutoDataType = typeof(SourceAutoData<>);
-
-        public RouteInfo(BotModuleBase module, MethodInfo route)
+        protected RouteInfo(BotModuleBase module, MethodInfo route)
         {
             this.module = module;
             this.route = route;
 
-            var identityReqs = route.GetCustomAttributes<IdentityRequirementsAttribute>()
-                              .Select<IdentityRequirementsAttribute, Predicate<MessageSource>>(r => src => r.Check(src.User.Identity, src.Permission))
-                              .ToList();
-            identityPred = identityReqs.Any()
-                ? src => identityReqs.Any(p => p(src))
-                : src => true;
+            resultProcessor = RouteResultProcessor.GetProcessor(route.ReturnType);
 
-            isThreadSafe = route.GetCustomAttribute<ThreadSafeAttribute>() is not null
-                        || route.GetCustomAttribute<AsyncStateMachineAttribute>() is not null;
-            groupAvailable = route.GetCustomAttribute<DisableInGroupAttribute>() is null;
-            privateAvailable = route.GetCustomAttribute<DisableInPrivateAttribute>() is null;
-
-            processor = RouteResultProcessors.GetProcessor(route.ReturnType);
-
-            isVoid = route.ReturnType == typeof(void);
-            isValueType = route.ReturnType.IsValueType && !isVoid;
-        }
-
-        public bool Run(MessageSource src, QMessage msg)
-        {
-            if (msg.PlainText is null)
+            parameters = route.GetParameters();
+            for (int i = 0; i < parameters.Length; i++)
             {
-                return false;
-            }
-
-            if (!(src.IsGroup ? groupAvailable : privateAvailable))
-            {
-                return false;
-            }
-
-            if (!identityPred(src))
-            {
-                return false;
-            }
-
-            object?[]? args = Check(src, msg);
-
-            if (args is null)
-            {
-                return false;
-            }
-
-            if (isVoid)
-            {
-                Task.Run(() =>
+                var parameter = parameters[i];
+                if (parameter.HasAttribute<DisabledAttribute>())
                 {
-                    if (isThreadSafe)
-                    {
-                        lock (_lock)
-                        {
-                            route.Invoke(module, args);
-                        }
-                    }
-                    else
-                    {
-                        route.Invoke(module, args);
-                    }
-                });
-                return true;
-            }
+                    continue;
+                }
 
-            object? result;
-            if (isThreadSafe)
-            {
-                lock (_lock)
+                var parameterType = parameter.ParameterType;
+                if (srcIndex == -1 && parameterType == typeof(MessageSource))
                 {
-                    result = route.Invoke(module, args);
+                    srcIndex = i;
+                }
+                if (msgIndex == -1 && parameterType == typeof(QMessage))
+                {
+                    msgIndex = i;
+                }
+                if (meetingIndex == -1 && parameterType == typeof(AsyncMeeting))
+                {
+                    meetingIndex = i;
+                }
+
+                if (srcIndex != -1 && msgIndex != -1 && meetingIndex != -1)
+                {
+                    break;
                 }
             }
-            else
-            {
-                result = route.Invoke(module, args);
-            }
 
-            if (processor is not null)
-            {
-                return processor(src, result);
-            }
-            if (isValueType)
-            {
-                return !result?.Equals(Activator.CreateInstance(route.ReturnType)) ?? false;
-            }
-            return result is not null;
+            disabledInGroup = route.HasAttribute<DisableInGroupAttribute>();
+            disabledInPrivate = route.HasAttribute<DisableInPrivateAttribute>();
         }
 
-        protected abstract object?[]? Check(MessageSource src, QMessage msg);
+        internal bool Run(MessageSource src, QMessage msg)
+        {
+            if (src.IsGroup ? disabledInGroup : disabledInPrivate)
+            {
+                return false;
+            }
+
+            if (!IsMatch(src, msg))
+            {
+                return false;
+            }
+
+            var args = new object?[parameters.Length];
+
+            if (srcIndex > -1)
+            {
+                args[srcIndex] = src;
+            }
+            if (msgIndex > -1)
+            {
+                args[msgIndex] = msg;
+            }
+            if (meetingIndex > -1)
+            {
+                args[meetingIndex] = new AsyncMeeting(src);
+            }
+
+            FillArguments(src, msg, args);
+
+            try
+            {
+                processLock?.Wait();
+
+                var result = route.Invoke(module, args);
+                return resultProcessor(src, msg, result);
+            }
+            finally
+            {
+                processLock?.Release();
+            }
+        }
+
+        protected abstract bool IsMatch(MessageSource src, QMessage msg);
+        protected virtual void FillArguments(MessageSource src, QMessage msg, object?[] args) { }
     }
 }

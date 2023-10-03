@@ -3,173 +3,106 @@
 
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace Maila.Cocoa.Framework.Models.Route
 {
-    internal delegate bool RouteResultProcessor(MessageSource src, object? result);
-
-    internal static class RouteResultProcessors
+    public static class RouteResultProcessor
     {
-        public static RouteResultProcessor? GetProcessor(Type type)
+        internal delegate bool Processor(MessageSource src, QMessage msg, object? returnValue);
+        public delegate bool Processor<T>(MessageSource src, QMessage msg, T returnValue);
+
+        private static readonly Dictionary<Type, Processor> processors = new();
+
+        static RouteResultProcessor()
         {
-            if (type == typeof(bool))
+            processors[typeof(void)] = static (_, _, _) => true;
+            processors[typeof(Task)] = static (_, _, _) => true;
+
+            RegistProcessor<bool>(static (_, _, result) => result);
+            RegistProcessor<string>(static (src, _, result) =>
             {
-                return (src, res) => res as bool? ?? false;
-            }
-            if (type == typeof(IEnumerator))
-            {
-                return Enumerator;
-            }
-            if (type == typeof(IEnumerable))
-            {
-                return Enumerable;
-            }
-            if (type == typeof(string))
-            {
-                return String;
-            }
-            if (type == typeof(StringBuilder))
-            {
-                return StringBuilder;
-            }
-            if (type == typeof(MessageBuilder))
-            {
-                return MessageBuilder;
-            }
-            if (type.IsGenericType
-                && type.GetGenericTypeDefinition() == typeof(Task<>)
-                && type.GenericTypeArguments.Length > 0)
-            {
-                var genericType = type.GenericTypeArguments[0];
-                if (genericType == typeof(string))
+                if (string.IsNullOrEmpty(result))
                 {
-                    return StringTask;
+                    return false;
                 }
-                if (genericType == typeof(StringBuilder))
+                else
                 {
-                    return StringBuilderTask;
-                }
-                if (genericType == typeof(MessageBuilder))
-                {
-                    return MessageBuilderTask;
-                }
-            }
-            return null;
-        }
-
-        private static bool Enumerator(MessageSource src, object? result)
-        {
-            if (result is not IEnumerator meeting)
-            {
-                return false;
-            }
-
-            Meeting.Start(src, meeting);
-            return true;
-        }
-
-        private static bool Enumerable(MessageSource src, object? result)
-        {
-            if (result is not IEnumerable meeting)
-            {
-                return false;
-            }
-
-            Meeting.Start(src, meeting);
-            return true;
-        }
-
-        private static bool String(MessageSource src, object? result)
-        {
-            string? res = result as string;
-            if (string.IsNullOrEmpty(res))
-            {
-                return false;
-            }
-
-            src.SendAsync(res);
-            return true;
-        }
-
-        private static bool StringBuilder(MessageSource src, object? result)
-        {
-            if (result is not StringBuilder res || res.Length <= 0)
-            {
-                return false;
-            }
-
-            src.SendAsync(res.ToString());
-            return true;
-        }
-
-        private static bool MessageBuilder(MessageSource src, object? result)
-        {
-            if (result is not MessageBuilder builder)
-            {
-                return false;
-            }
-
-            src.SendAsync(builder);
-            return true;
-        }
-
-        private static bool StringTask(MessageSource src, object? result)
-        {
-            if (result is not Task<string> task)
-            {
-                return false;
-            }
-
-            Task.Run(async () =>
-            {
-                var res = await task;
-                if (!string.IsNullOrEmpty(res))
-                {
-                    _ = src.SendAsync(res);
+                    src.Send(result);
+                    return true;
                 }
             });
-
-            return true;
-        }
-
-        private static bool StringBuilderTask(MessageSource src, object? result)
-        {
-            if (result is not Task<StringBuilder> task)
+            RegistProcessor<IEnumerator>(static (src, _, result) =>
             {
-                return false;
-            }
-
-            Task.Run(async () =>
+                Meeting.Start(src, result);
+                return true;
+            });
+            RegistProcessor<IEnumerable>(static (src, _, result) =>
             {
-                var res = await task;
-                if (res is { Length: > 0 })
+                Meeting.Start(src, result);
+                return true;
+            });
+            RegistProcessor<StringBuilder>(static (src, _, result) =>
+            {
+                if (result.Length > 0)
                 {
-                    _ = src.SendAsync(res.ToString());
+                    src.SendAsync(result.ToString());
+                    return true;
+                }
+                else
+                {
+                    return false;
                 }
             });
-
-            return true;
+            RegistProcessor<MessageBuilder>(static (src, _, result) =>
+            {
+                src.Send(result);
+                return true;
+            });
         }
 
-        private static bool MessageBuilderTask(MessageSource src, object? result)
+        private static Processor Wrap<T>(Processor<T> func)
+            => (src, msg, returnVal) => returnVal is T result && func(src, msg, result);
+
+        public static void RegistProcessor<T>(Processor<T> func)
         {
-            if (result is not Task<MessageBuilder> task)
+            processors[typeof(T)] = Wrap(func);
+            processors[typeof(Task<T>)] = Wrap<Task<T>>((src, msg, task) =>
             {
-                return false;
+                Task.Run(async () => func(src, msg, await task));
+                return true;
+            });
+        }
+
+        internal static Processor GetProcessor(Type returnType)
+        {
+            if (processors.TryGetValue(returnType, out var processor))
+            {
+                return processor;
             }
 
-            Task.Run(async () =>
+            if (returnType.IsValueType)
             {
-                var res = await task;
-                if (res is not null)
+                return (_, _, returnValue) =>
                 {
-                    _ = src.SendAsync(res);
-                }
-            });
-
-            return true;
+                    try
+                    {
+                        var defaultValue = Activator.CreateInstance(returnType);
+                        var isDefaultValue = returnValue?.Equals(defaultValue) ?? false;
+                        return !isDefaultValue;
+                    }
+                    catch
+                    {
+                        return false;
+                    }
+                };
+            }
+            else
+            {
+                return static (_, _, returnValue) => returnValue != null;
+            }
         }
     }
 }

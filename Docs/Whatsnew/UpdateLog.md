@@ -1,5 +1,16 @@
 <h1 align="center">更新日志</h1>
 
+# **2.1.8.3**
+*released October 3, 2023*
+
+## 新特性
+- 支持自定义 Route
+
+## 修复
+- 更新依赖，以修复 OOB write 漏洞（CVE-2023-4863）
+
+<br>
+
 # **2.1.8.2**
 *released March 5, 2023*
 

@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Text.RegularExpressions;
+using System.Threading;
 using Maila.Cocoa.Framework.Models.Route;
 using Maila.Cocoa.Framework.Support;
 
@@ -144,27 +144,23 @@ namespace Maila.Cocoa.Framework
 
             #region === Route ===
 
-            MethodInfo[] methods = RealType.GetMethods();
-            foreach (var method in methods)
+            foreach (var method in RealType.GetMethods())
             {
-                if (method.GetCustomAttribute<DisabledAttribute>() is not null)
+                if (method.HasAttribute<DisabledAttribute>())
                 {
                     continue;
                 }
 
-                if (method.GetCustomAttributes<TextRouteAttribute>().ToArray() is { Length: > 0 } textRouteInfos)
-                {
-                    string[] texts = textRouteInfos.Select(t => t.Text).ToArray();
-                    bool[] ignoreCases = textRouteInfos.Select(t => t.IgnoreCase).ToArray();
-                    bool[] atRequireds = textRouteInfos.Select(t => t.AtRequired).ToArray();
-                    routes.Add(new TextRouteInfo(this, method, texts, ignoreCases, atRequireds));
-                }
+                var methodThreadSafe = method.HasAttribute<ThreadSafeAttribute>()
+                    || method.HasAttribute<AsyncStateMachineAttribute>();
 
-                if (method.GetCustomAttributes<RegexRouteAttribute>().ToArray() is { Length: > 0 } regexRouteInfos)
+                var routeProcessLock = methodThreadSafe ? new SemaphoreSlim(1) : null;
+
+                foreach (var route in method.GetCustomAttributes<RouteAttribute>())
                 {
-                    Regex[] regexs = regexRouteInfos.Select(r => r.Regex).ToArray();
-                    bool[] atRequireds = regexRouteInfos.Select(r => r.AtRequired).ToArray();
-                    routes.Add(new RegexRouteInfo(this, method, regexs, atRequireds));
+                    var routeInfo = route.GetRouteInfo(this, method);
+                    routeInfo.processLock = routeProcessLock;
+                    routes.Add(routeInfo);
                 }
             }
 
